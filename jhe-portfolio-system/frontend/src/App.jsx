@@ -16,6 +16,7 @@ import TelemetryView from './pages/admin/TelemetryView';
 import UserTelemetryView from './pages/admin/UserTelemetryView';
 import ProjectReviewQueue from './pages/admin/ProjectReviewQueue';
 import UserDashboard from './pages/admin/UserDashboard';
+import AuditLogs from './pages/admin/AuditLogs';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
             <Route path="projetos/revisoes" element={<ProjectReviewQueue />} />
             <Route path="my-telemetry" element={<UserTelemetryView />} />
             <Route path="telemetry" element={<TelemetryView />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
             {/* Novas páginas podem ser adicionadas aqui e herdarão a Sidebar automaticamente */}
           </Route>
 

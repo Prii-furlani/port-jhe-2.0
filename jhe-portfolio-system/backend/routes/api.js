@@ -16,6 +16,7 @@ const userDashboardController = require('../controllers/userDashboardController'
 const reviewController = require('../controllers/reviewController');
 const settingsController = require('../controllers/settingsController');
 const adminController = require('../controllers/adminController');
+const auditController = require('../controllers/auditController');
 const technologyController = require('../controllers/technologyController');
 const uploadClient = require('../config/uploadClient');
 const uploadProject = require('../config/uploadProject');
@@ -25,6 +26,8 @@ const timelineController = require('../controllers/timelineController');
 // Rota do Dashboard (Somente Admin Master)
 router.get('/admin/dashboard/summary', verifyToken, requireMasterAdmin, adminController.getDashboardSummary);
 router.get('/admin/telemetry/summary', verifyToken, requireMasterAdmin, telemetryController.getTelemetrySummary);
+router.get('/admin/telemetry/export/pdf', verifyToken, requireMasterAdmin, telemetryController.exportPdfSummary);
+router.get('/admin/audit-logs', verifyToken, requireMasterAdmin, auditController.getAuditLogs);
 
 // Rotas da Fila de Moderação (Somente Admin Master)
 router.get('/admin/projects/pending', verifyToken, requireMasterAdmin, reviewController.getPendingProjects);
@@ -77,7 +80,12 @@ router.get('/portfolio', clientController.getPortfolioClients);
 router.get('/settings/home', settingsController.getHomeSettings);
 
 // Rotas Protegidas (Requer Autenticação e Role de Admin)
-router.put('/settings/home', verifyToken, requireMasterAdmin, upload.single('hero_image'), settingsController.updateHomeSettings);
+router.put('/settings/home', verifyToken, requireMasterAdmin, upload.fields([
+  { name: 'hero_image', maxCount: 1 },
+  { name: 'logo_light', maxCount: 1 },
+  { name: 'logo_dark', maxCount: 1 },
+  { name: 'logo_footer', maxCount: 1 }
+]), settingsController.updateHomeSettings);
 
 // Rotas de Projetos (CRUD)
 router.get('/projects', optionalVerifyToken, projectController.getAllProjects);

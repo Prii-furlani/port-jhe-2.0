@@ -8,6 +8,8 @@ import ServiceManager from '../../components/ServiceManager';
 import ClientManager from '../../components/ClientManager';
 import PillarManager from '../../components/PillarManager';
 import TimelineManager from '../../components/TimelineManager';
+import MenuFooterManager from '../../components/MenuFooterManager';
+import { LayoutTemplate } from 'lucide-react';
 
 const HomeSettings = () => {
   const { user, token } = useAuth();
@@ -95,6 +97,7 @@ const HomeSettings = () => {
 
   const tabs = [
     { id: 'banner', label: 'Banner Principal (Hero)', icon: Image },
+    { id: 'menu_footer', label: 'Menu e Rodapé', icon: LayoutTemplate },
     { id: 'timeline', label: 'Linha do Tempo', icon: Clock },
     { id: 'pilares', label: 'Pilares (Bento Grid)', icon: Grid },
     { id: 'clientes', label: 'Clientes', icon: Users },
@@ -187,6 +190,10 @@ const HomeSettings = () => {
                 </button>
               </div>
             </form>
+          )}
+
+          {activeTab === 'menu_footer' && (
+            <MenuFooterManager />
           )}
 
           {activeTab === 'timeline' && (

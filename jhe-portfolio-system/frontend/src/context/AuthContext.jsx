@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('jhe_token', data.token);
         setToken(data.token);
         setUser(data.user);
-        return { success: true };
+        return { success: true, user: data.user };
       } else {
         return { success: false, error: data.error || 'Falha na autenticação.' };
       }

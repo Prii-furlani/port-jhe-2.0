@@ -2,19 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Eye, Users, BarChart2, Award, Download, Loader2, Activity } from 'lucide-react';
 
+import { useAuth } from '../../context/AuthContext';
+
 const TelemetryView = () => {
+  const { token } = useAuth();
   const [period, setPeriod] = useState('30d');
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    fetchTelemetry();
-  }, [period]);
+    if (token) fetchTelemetry();
+  }, [period, token]);
 
   const fetchTelemetry = async () => {
+    if (!token) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch(`http://localhost:5000/api/admin/telemetry/summary?period=${period}`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -28,6 +31,34 @@ const TelemetryView = () => {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExport = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/admin/telemetry/export/pdf?period=${period}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!res.ok) {
+        console.error('Erro ao exportar PDF');
+        return;
+      }
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `relatorio_telemetria_jhe_${period}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Erro de rede ao exportar PDF', e);
     }
   };
 
@@ -67,7 +98,7 @@ const TelemetryView = () => {
             ))}
           </div>
 
-          <button className="bg-white dark:bg-[#081330] text-[#194775] dark:text-white border border-slate-200 dark:border-white/10 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm">
+          <button onClick={handleExport} className="bg-white dark:bg-[#081330] text-[#194775] dark:text-white border border-slate-200 dark:border-white/10 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm">
             <Download size={18} /> Exportar
           </button>
         </div>

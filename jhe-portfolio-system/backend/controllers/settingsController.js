@@ -19,47 +19,39 @@ exports.getHomeSettings = async (req, res) => {
 
 exports.updateHomeSettings = async (req, res) => {
     try {
-        const { hero_title, hero_subtitle, require_project_approval } = req.body;
+        const { hero_title, hero_subtitle, require_project_approval, footer_linkedin, footer_website, footer_phone } = req.body;
         
         // Verifica se a imagem foi enviada pelo Multer
-        const file = req.file;
-        let hero_image_url = null;
-
-        if (file) {
-            // Salva o caminho relativo (acessível pelo frontend estaticamente)
-            hero_image_url = `/uploads/settings/${file.filename}`;
-        }
+        const files = req.files || {};
+        
+        let hero_image_url = files.hero_image ? `/uploads/settings/${files.hero_image[0].filename}` : null;
+        let logo_light_url = files.logo_light ? `/uploads/settings/${files.logo_light[0].filename}` : null;
+        let logo_dark_url = files.logo_dark ? `/uploads/settings/${files.logo_dark[0].filename}` : null;
+        let logo_footer_url = files.logo_footer ? `/uploads/settings/${files.logo_footer[0].filename}` : null;
 
         // Helper para o UPSERT (ON DUPLICATE KEY UPDATE)
         const queries = [];
         
-        if (hero_title !== undefined) {
-            queries.push(pool.query(
-                `INSERT INTO config_home (chave, valor) VALUES ('hero_title', ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
-                [hero_title]
-            ));
-        }
+        const updateField = (key, value) => {
+            if (value !== undefined && value !== null) {
+                queries.push(pool.query(
+                    `INSERT INTO config_home (chave, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
+                    [key, value]
+                ));
+            }
+        };
 
-        if (hero_subtitle !== undefined) {
-            queries.push(pool.query(
-                `INSERT INTO config_home (chave, valor) VALUES ('hero_subtitle', ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
-                [hero_subtitle]
-            ));
-        }
+        updateField('hero_title', hero_title);
+        updateField('hero_subtitle', hero_subtitle);
+        updateField('require_project_approval', require_project_approval);
+        updateField('footer_linkedin', footer_linkedin);
+        updateField('footer_website', footer_website);
+        updateField('footer_phone', footer_phone);
 
-        if (require_project_approval !== undefined) {
-            queries.push(pool.query(
-                `INSERT INTO config_home (chave, valor) VALUES ('require_project_approval', ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
-                [require_project_approval]
-            ));
-        }
-
-        if (hero_image_url !== null) {
-            queries.push(pool.query(
-                `INSERT INTO config_home (chave, valor) VALUES ('hero_image', ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)`,
-                [hero_image_url]
-            ));
-        }
+        updateField('hero_image', hero_image_url);
+        updateField('logo_light', logo_light_url);
+        updateField('logo_dark', logo_dark_url);
+        updateField('logo_footer', logo_footer_url);
 
         // Executa todas as atualizações em paralelo
         await Promise.all(queries);

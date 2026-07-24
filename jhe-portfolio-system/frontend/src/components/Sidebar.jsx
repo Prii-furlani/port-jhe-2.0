@@ -1,16 +1,16 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  FolderKanban, 
-  Activity, 
-  ShieldAlert, 
-  Settings, 
-  User, 
-  KeyRound, 
-  ExternalLink, 
-  Moon, 
-  Sun, 
+import {
+  LayoutDashboard,
+  FolderKanban,
+  Activity,
+  ShieldAlert,
+  Settings,
+  User,
+  KeyRound,
+  ExternalLink,
+  Moon,
+  Sun,
   LogOut,
   BarChart2,
   ClipboardCheck
@@ -20,10 +20,29 @@ import { useAuth } from '../context/AuthContext';
 const Sidebar = ({ onOpenPasswordModal }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
-  
+
   // Theme logic isolated for now (or move to context later)
   const [theme, setTheme] = React.useState('light');
-  
+  const [logos, setLogos] = React.useState({ light: null, dark: null });
+
+  React.useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/settings/home');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setLogos({
+            light: data.data.logo_light ? `http://localhost:5000${data.data.logo_light}` : null,
+            dark: data.data.logo_dark ? `http://localhost:5000${data.data.logo_dark}` : null,
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao buscar logos da sidebar', err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   React.useEffect(() => {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     setTheme(currentTheme);
@@ -45,7 +64,13 @@ const Sidebar = ({ onOpenPasswordModal }) => {
       <div>
         {/* BRAND LOGO */}
         <div className="sidebar-header">
-          <h1 className="sidebar-logo-text">JHE</h1>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            {(theme === 'dark' && logos.dark) || (theme === 'light' && logos.light) ? (
+              <img src={theme === 'dark' ? (logos.dark || logos.light) : (logos.light || logos.dark)} alt="JHE Consultores" style={{ height: '40px', objectFit: 'contain' }} />
+            ) : (
+              <h1 className="sidebar-logo-text">JHE</h1>
+            )}
+          </Link>
         </div>
 
         {/* NAVEGAÇÃO PRINCIPAL */}
@@ -72,7 +97,7 @@ const Sidebar = ({ onOpenPasswordModal }) => {
           {isMasterAdmin && (
             <>
               <div className="sidebar-divider" />
-              
+
               <Link to="/admin/telemetry" className={`sidebar-link ${isActive('/admin/telemetry')}`}>
                 <Activity size={18} />
                 <span>Telemetria Executiva</span>
@@ -108,7 +133,7 @@ const Sidebar = ({ onOpenPasswordModal }) => {
           <span>Alterar Senha</span>
         </button>
 
-        <a href="/" target="_blank" rel="noopener noreferrer" className="sidebar-link">
+        <a href="/" rel="noopener noreferrer" className="sidebar-link">
           <ExternalLink size={16} />
           <span>Ver Site</span>
         </a>

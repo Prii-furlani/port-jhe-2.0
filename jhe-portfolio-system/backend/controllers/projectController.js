@@ -138,7 +138,8 @@ exports.createProject = async (req, res) => {
         const { 
             titulo, cliente_id, servico_id, setor, descricao_detalhada, 
             resumo_curto, desafios, metodologias, link_oficial, 
-            ano_desenvolvimento, status_solicitado, tecnologias, stakeholders 
+            ano_desenvolvimento, status_solicitado, tecnologias, stakeholders,
+            localizacao, kpis_impacto
         } = req.body;
         
         let imagem_url = null;
@@ -164,11 +165,11 @@ exports.createProject = async (req, res) => {
 
         const [result] = await connection.query(`
             INSERT INTO projetos 
-            (titulo, cliente_id, servico_id, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento, stakeholders, imagem_url, status, created_by)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (titulo, cliente_id, servico_id, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento, stakeholders, imagem_url, status, created_by, localizacao, kpis_impacto)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
             titulo, cliente_id, servico_id || null, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, 
-            ano_desenvolvimento || null, stakeholdersJson, imagem_url, finalStatus, userId
+            ano_desenvolvimento || null, stakeholdersJson, imagem_url, finalStatus, userId, localizacao || null, kpis_impacto || null
         ]);
         
         const projetoId = result.insertId;
@@ -225,7 +226,8 @@ exports.updateProject = async (req, res) => {
         const { 
             titulo, cliente_id, servico_id, setor, descricao_detalhada, 
             resumo_curto, desafios, metodologias, link_oficial, 
-            ano_desenvolvimento, status_solicitado, tecnologias, stakeholders 
+            ano_desenvolvimento, status_solicitado, tecnologias, stakeholders,
+            localizacao, kpis_impacto
         } = req.body;
 
         const stakeholdersJson = stakeholders ? (typeof stakeholders === 'string' ? stakeholders : JSON.stringify(stakeholders)) : '[]';
@@ -249,9 +251,9 @@ exports.updateProject = async (req, res) => {
         let updateQuery = `
             UPDATE projetos SET 
                 titulo=?, cliente_id=?, servico_id=?, setor=?, resumo_curto=?, descricao_detalhada=?, 
-                desafios=?, metodologias=?, link_oficial=?, ano_desenvolvimento=?, stakeholders=?, status=?
+                desafios=?, metodologias=?, link_oficial=?, ano_desenvolvimento=?, stakeholders=?, status=?, localizacao=?, kpis_impacto=?
         `;
-        let params = [titulo, cliente_id, servico_id || null, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento || null, stakeholdersJson, finalStatus];
+        let params = [titulo, cliente_id, servico_id || null, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento || null, stakeholdersJson, finalStatus, localizacao || null, kpis_impacto || null];
 
         if (req.files && req.files['cover_image']) {
             updateQuery += `, imagem_url=?`;

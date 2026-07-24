@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 
 const LinkedinIcon = ({ size = 18 }) => (
@@ -10,19 +10,44 @@ const LinkedinIcon = ({ size = 18 }) => (
 );
 
 export const Footer = () => {
+  const [settings, setSettings] = useState({
+    linkedin: 'https://www.linkedin.com/company/jhe-engenharia',
+    website: 'https://www.jhe.com.br/',
+    logo: '/logo.png'
+  });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/settings/home');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setSettings({
+            linkedin: data.data.footer_linkedin || 'https://www.linkedin.com/company/jhe-engenharia',
+            website: data.data.footer_website || 'https://www.jhe.com.br/',
+            logo: data.data.logo_footer ? `http://localhost:5000${data.data.logo_footer}` : '/logo.png'
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao buscar settings do footer', err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   return (
     <footer className="footer-container">
       <div className="home-footer-grid">
         <div className="home-footer-brand">
           <div className="bg-white/95 px-3 py-2 rounded-lg inline-block shadow-sm mb-2">
-            <img src="/logo.png" alt="JHE Engenharia" className="h-10 w-auto object-contain" />
+            <img src={settings.logo} alt="JHE Engenharia" className="h-10 w-auto object-contain" />
           </div>
           <p className="home-footer-brand-desc">
             Precisão técnica e inovação em engenharia consultiva para grandes infraestruturas.
           </p>
           <div style={{ display: 'flex', gap: '12px' }}>
             <a
-              href="https://www.linkedin.com/company/jhe-engenharia"
+              href={settings.linkedin}
               target="_blank"
               rel="noopener noreferrer"
               className="footer-social-link"
@@ -31,7 +56,7 @@ export const Footer = () => {
               <LinkedinIcon size={18} />
             </a>
             <a
-              href="https://www.jhe.com.br/"
+              href={settings.website}
               target="_blank"
               rel="noopener noreferrer"
               className="footer-social-link"

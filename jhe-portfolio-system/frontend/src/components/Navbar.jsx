@@ -6,6 +6,25 @@ import { useAuth } from '../context/AuthContext';
 export const Navbar = () => {
   const [theme, setTheme] = useState('light');
   const { isAuthenticated, user } = useAuth();
+  const [logos, setLogos] = useState({ light: null, dark: null });
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/settings/home');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setLogos({
+            light: data.data.logo_light ? `http://localhost:5000${data.data.logo_light}` : null,
+            dark: data.data.logo_dark ? `http://localhost:5000${data.data.logo_dark}` : null,
+          });
+        }
+      } catch (err) {
+        console.error('Erro ao buscar logos', err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -24,7 +43,11 @@ export const Navbar = () => {
     <nav className="navbar-public flex justify-between items-center px-8 py-4 bg-white/80 dark:bg-[#020920]/80 backdrop-blur-md border-b border-slate-200 dark:border-white/10 fixed top-0 w-full z-50">
       <div className="navbar-brand">
         <Link to="/">
-          <img src="/logo.png" alt="JHE Consultores" className="h-10 object-contain" />
+          {(theme === 'dark' && logos.dark) || (theme === 'light' && logos.light) ? (
+            <img src={theme === 'dark' ? (logos.dark || logos.light) : (logos.light || logos.dark)} alt="JHE Consultores" className="h-10 object-contain" />
+          ) : (
+            <img src="/logo.png" alt="JHE Consultores" className="h-10 object-contain" />
+          )}
         </Link>
       </div>
 

@@ -12,11 +12,13 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
     servico_id: '',
     setor: '',
     ano_desenvolvimento: new Date().getFullYear(),
+    localizacao: '',
     link_oficial: '',
     resumo_curto: '',
     descricao_detalhada: '',
     desafios: '',
     metodologias: '',
+    kpis_impacto: '',
     stakeholders: []
   });
   const [coverImage, setCoverImage] = useState(null);
@@ -49,11 +51,13 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
           servico_id: editingProject.servico_id || '',
           setor: editingProject.setor || '',
           ano_desenvolvimento: editingProject.ano_desenvolvimento || new Date().getFullYear(),
+          localizacao: editingProject.localizacao || '',
           link_oficial: editingProject.link_oficial || '',
           resumo_curto: editingProject.resumo_curto || '',
           descricao_detalhada: editingProject.descricao_detalhada || '',
           desafios: editingProject.desafios || '',
           metodologias: editingProject.metodologias || '',
+          kpis_impacto: editingProject.kpis_impacto || '',
           stakeholders: editingProject.stakeholders || []
         });
         setSelectedTechs(editingProject.tecnologias || []);
@@ -96,8 +100,8 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
 
   const resetForm = () => {
     setFormData({
-      titulo: '', cliente_id: '', servico_id: '', setor: '', ano_desenvolvimento: new Date().getFullYear(),
-      link_oficial: '', resumo_curto: '', descricao_detalhada: '', desafios: '', metodologias: '', stakeholders: []
+      titulo: '', cliente_id: '', servico_id: '', setor: '', ano_desenvolvimento: new Date().getFullYear(), localizacao: '',
+      link_oficial: '', resumo_curto: '', descricao_detalhada: '', desafios: '', metodologias: '', kpis_impacto: '', stakeholders: []
     });
     setCoverImage(null);
     setCoverPreview('');
@@ -396,6 +400,11 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                   <input type="text" className="form-input w-full p-2 border rounded-xl" placeholder="Ex: 2024 ou 2023-2024"
                     value={formData.ano_desenvolvimento} onChange={e => setFormData({...formData, ano_desenvolvimento: e.target.value})} />
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Localização</label>
+                  <input type="text" className="form-input w-full p-2 border rounded-xl" placeholder="Ex: São Paulo, SP"
+                    value={formData.localizacao} onChange={e => setFormData({...formData, localizacao: e.target.value})} />
+                </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-semibold mb-1">Pessoas Interessadas (Stakeholders)</label>
                   <input type="text" className="form-input w-full p-2 border rounded-xl mb-2" placeholder="Digite um nome e pressione Enter..."
@@ -419,13 +428,13 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold mb-1">Descrição Técnica Detalhada</label>
-                  <textarea className="form-input w-full p-2 border rounded-xl" rows={3} 
+                  <textarea className="form-input w-full p-2 border rounded-xl" rows={3} placeholder="Como a JHE atuou? Quais metodologias, tecnologias e diferenciais tornaram esse projeto um sucesso?"
                     value={formData.descricao_detalhada} onChange={e => setFormData({...formData, descricao_detalhada: e.target.value})} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold mb-1">Desafios e Complexidades</label>
-                    <textarea className="form-input w-full p-2 border rounded-xl" rows={3} 
+                    <textarea className="form-input w-full p-2 border rounded-xl" rows={3} placeholder="Qual era o principal problema enfrentado pela comunidade ou pelo cliente antes da atuação da JHE?"
                       value={formData.desafios} onChange={e => setFormData({...formData, desafios: e.target.value})} />
                   </div>
                   <div>
@@ -433,6 +442,11 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                     <textarea className="form-input w-full p-2 border rounded-xl" rows={3} placeholder="Ex: Agile/Scrum, BIM Level 3..."
                       value={formData.metodologias} onChange={e => setFormData({...formData, metodologias: e.target.value})} />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Resultados e Impacto (KPIs Narrativos)</label>
+                  <textarea className="form-input w-full p-2 border rounded-xl" rows={2} placeholder="Quais foram os principais ganhos gerados? (Ex: +50.000 Famílias Atendidas, Redução de 30% nas perdas)"
+                    value={formData.kpis_impacto} onChange={e => setFormData({...formData, kpis_impacto: e.target.value})} />
                 </div>
               </div>
 

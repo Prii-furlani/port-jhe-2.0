@@ -14,18 +14,18 @@ exports.getAllPillars = async (req, res) => {
 // Criar novo pilar
 exports.createPillar = async (req, res) => {
     try {
-        const { titulo, descricao, icone } = req.body;
+        const { titulo, descricao, icone, kicker, footer_text } = req.body;
         if (!titulo) return res.status(400).json({ success: false, error: 'O título do pilar é obrigatório.' });
 
         const [result] = await pool.query(
-            'INSERT INTO pillars (titulo, descricao, icone) VALUES (?, ?, ?)',
-            [titulo, descricao || null, icone || 'Target']
+            'INSERT INTO pillars (titulo, descricao, icone, kicker, footer_text) VALUES (?, ?, ?, ?, ?)',
+            [titulo, descricao || null, icone || 'Target', kicker || null, footer_text || null]
         );
 
         res.json({ 
             success: true, 
             message: 'Pilar cadastrado com sucesso!', 
-            data: { id: result.insertId, titulo, descricao, icone }
+            data: { id: result.insertId, titulo, descricao, icone, kicker, footer_text }
         });
     } catch (error) {
         console.error('Erro ao criar pilar:', error);
@@ -37,13 +37,13 @@ exports.createPillar = async (req, res) => {
 exports.updatePillar = async (req, res) => {
     try {
         const { id } = req.params;
-        const { titulo, descricao, icone } = req.body;
+        const { titulo, descricao, icone, kicker, footer_text } = req.body;
 
         if (!titulo) return res.status(400).json({ success: false, error: 'O título do pilar é obrigatório.' });
 
         const [result] = await pool.query(
-            'UPDATE pillars SET titulo = ?, descricao = ?, icone = ? WHERE id = ?',
-            [titulo, descricao || null, icone || 'Target', id]
+            'UPDATE pillars SET titulo = ?, descricao = ?, icone = ?, kicker = ?, footer_text = ? WHERE id = ?',
+            [titulo, descricao || null, icone || 'Target', kicker || null, footer_text || null, id]
         );
 
         if (result.affectedRows === 0) {

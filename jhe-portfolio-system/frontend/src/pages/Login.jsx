@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Lock, User, ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
 
 const Login = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -14,9 +14,13 @@ const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/admin');
+      if (user?.role === 'admin_master') {
+        navigate('/admin');
+      } else if (user) {
+        navigate('/user');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +36,11 @@ const Login = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/admin');
+      if (result.user?.role === 'admin_master') {
+        navigate('/admin');
+      } else {
+        navigate('/user');
+      }
     } else {
       setError(result.error || 'Credenciais inválidas. Verifique e tente novamente.');
     }

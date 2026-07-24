@@ -78,12 +78,17 @@ const ProjectDetail = () => {
               <ArrowLeft size={16} /> VOLTAR PARA O PORTFÓLIO
             </Link>
 
-            {/* Badge Setor/Serviço */}
-            {(project.setor || project.servico_nome) && (
-              <div className="inline-block px-3 py-1 bg-[#A07146]/10 dark:bg-[#A07146]/20 border border-[#A07146]/30 text-[#A07146] text-[11px] font-black uppercase tracking-widest rounded-full mb-4">
-                {project.setor || project.servico_nome}
+            {/* Badges Iniciais */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <div className="inline-block px-3 py-1 bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-400 text-[11px] font-black uppercase tracking-widest rounded-full">
+                Jornada de Transformação
               </div>
-            )}
+              {(project.setor || project.servico_nome) && (
+                <div className="inline-block px-3 py-1 bg-[#A07146]/10 dark:bg-[#A07146]/20 border border-[#A07146]/30 text-[#A07146] text-[11px] font-black uppercase tracking-widest rounded-full">
+                  {project.setor || project.servico_nome}
+                </div>
+              )}
+            </div>
             
             {/* Título Principal */}
             <h1 className="text-3xl md:text-5xl font-extrabold text-[#194775] dark:text-white mb-6 leading-tight">
@@ -92,6 +97,12 @@ const ProjectDetail = () => {
 
             {/* Metadados */}
             <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-slate-600 dark:text-slate-300">
+              {project.localizacao && (
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} className="text-[#38bdf8]" />
+                  <span>{project.localizacao}</span>
+                </div>
+              )}
               {project.ano_desenvolvimento && (
                 <div className="flex items-center gap-2">
                   <Calendar size={16} className="text-[#38bdf8]" />
@@ -154,7 +165,7 @@ const ProjectDetail = () => {
             {project.stakeholders && project.stakeholders.length > 0 && (
               <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 transition-colors">
                 <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
-                  Equipe / Interessados
+                  Mentes por trás deste projeto
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {project.stakeholders.map((person, idx) => (
@@ -199,9 +210,10 @@ const ProjectDetail = () => {
                 )}
                 
                 {project.desafios && (
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6">O Desafio Técnico</h2>
-                    <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed text-base">
+                  <div className="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-8 border-l-4 border-slate-300 dark:border-slate-700">
+                    <span className="block text-[#A07146] font-black text-sm tracking-widest uppercase mb-2">01. O Desafio Humano & Técnico</span>
+                    <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6">O Contexto Antes da JHE</h2>
+                    <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-200 leading-relaxed text-base md:text-lg font-sans">
                       {project.desafios.split('\n').map((para, i) => (
                         <p key={i} className="mb-4">{para}</p>
                       ))}
@@ -213,22 +225,43 @@ const ProjectDetail = () => {
 
             {/* Bloco 2: Destaque Solução de Engenharia (Callout Box) */}
             {project.metodologias && (
-              <div className="bg-gradient-to-br from-[#194775]/5 dark:from-[#0c1c48] to-[#194775]/10 dark:to-[#081330] border border-[#194775]/20 dark:border-[#38bdf8]/30 rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden transition-colors">
-                <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-5 text-[#194775] dark:text-white">
+              <div className="bg-gradient-to-r from-[#0c1c48] to-[#194775] border-l-4 border-[#38bdf8] p-8 rounded-2xl shadow-xl relative overflow-hidden transition-colors">
+                <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-5 text-white">
                   <Activity size={120} />
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-[#194775]/10 dark:bg-[#38bdf8]/20 p-3 rounded-xl text-[#194775] dark:text-[#38bdf8]">
+                    <div className="bg-[#38bdf8]/20 p-3 rounded-xl text-[#38bdf8]">
                       <CheckCircle2 size={24} />
                     </div>
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white">Solução e Metodologia</h3>
+                    <div>
+                      <span className="block text-[#38bdf8] font-black text-sm tracking-widest uppercase mb-1">02. A Solução JHE</span>
+                      <h3 className="text-2xl font-bold text-white">Engenharia & Inovação</h3>
+                    </div>
                   </div>
-                  <div className="text-slate-700 dark:text-slate-300 leading-relaxed text-base prose prose-slate dark:prose-invert max-w-none">
+                  <div className="text-slate-200 leading-relaxed text-base md:text-lg font-sans max-w-none">
                     {project.metodologias.split('\n').map((para, i) => (
                       <p key={i} className="mb-4">{para}</p>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bloco 2.5: KPIs de Impacto (Big Numbers) */}
+            {project.kpis_impacto && (
+              <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-xl">
+                <h3 className="text-sm font-bold text-[#A07146] uppercase tracking-[0.2em] mb-8 border-b border-slate-200 dark:border-white/10 pb-4">
+                  03. O Legado e os Resultados
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {project.kpis_impacto.split('\n').filter(k => k.trim()).map((kpi, idx) => (
+                    <div key={idx} className="bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800/50 rounded-2xl p-6 text-center shadow-sm">
+                      <p className="text-lg md:text-xl font-black text-[#194775] dark:text-[#38bdf8] leading-tight">
+                        {kpi}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
