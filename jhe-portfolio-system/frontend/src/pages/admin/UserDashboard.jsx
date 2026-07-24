@@ -44,7 +44,7 @@ const UserDashboard = () => {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-2">
-            <LayoutDashboard className="text-[#194775] dark:text-[#38bdf8]" />
+            <LayoutDashboard className="text-secondary-brand dark:text-accent-primary" />
             Olá, {user?.nome?.split(' ')[0] || 'Autor'}!
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">Gerencie seus softwares e acompanhe a aprovação de novos projetos.</p>
@@ -52,7 +52,7 @@ const UserDashboard = () => {
         
         <button 
           onClick={() => navigate('/admin/projects')} 
-          className="bg-[#194775] text-white px-5 py-2.5 rounded-xl font-bold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+          className="bg-secondary-brand text-white px-5 py-2.5 rounded-xl font-bold hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
         >
           <Plus size={18} /> Cadastrar Novo Projeto
         </button>
@@ -78,7 +78,7 @@ const UserDashboard = () => {
       )}
 
       {/* BANNER DE PROPÓSITO SUPERIOR */}
-      <div className="mb-8 bg-gradient-to-r from-[#194775] to-[#38bdf8] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+      <div className="mb-8 bg-gradient-to-r from-secondary-brand to-accent-primary rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 h-full w-1/3 bg-white/5 skew-x-12 transform origin-top"></div>
         <div className="relative z-10 max-w-3xl">
           <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-black uppercase tracking-widest mb-4">
@@ -139,42 +139,48 @@ const UserDashboard = () => {
       {/* MÉTRICAS DE DESEMPENHO (Views & Impacto) */}
       {!loading && data?.telemetry_kpis && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 text-[#38bdf8]/10 group-hover:scale-110 transition-transform"><TrendingUp size={120} /></div>
-            <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10 flex items-center justify-between">
-              Visualizações Totais
-              <span className="bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full text-[10px] font-black">+ Ativo</span>
-            </p>
-            <h2 className="text-4xl font-black text-[#194775] dark:text-white relative z-10">{data.telemetry_kpis.total_views}</h2>
+          <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 p-6 rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#194775] opacity-40 dark:text-[#38bdf8] dark:opacity-30 group-hover:scale-110 transition-transform"><TrendingUp size={90} /></div>
+            <div className="relative z-10">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block flex items-center justify-between">
+                Visualizações Totais
+                <span className="bg-green-100 text-green-700 dark:bg-green-500/20 dark:text-green-400 px-2 py-0.5 rounded-full text-[10px] font-black">+ Ativo</span>
+              </p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#194775] dark:text-white tracking-tight">{data.telemetry_kpis.total_views}</h2>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 text-indigo-500/10 group-hover:scale-110 transition-transform"><FolderCheck size={120} /></div>
-            <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Média Acessos/Proj</p>
-            <h2 className="text-4xl font-black text-[#194775] dark:text-white relative z-10">{data.telemetry_kpis.avg_views_per_project}</h2>
+          <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 p-6 rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#194775] opacity-40 dark:text-[#38bdf8] dark:opacity-30 group-hover:scale-110 transition-transform"><FolderCheck size={90} /></div>
+            <div className="relative z-10">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Média Acessos/Proj</p>
+              <h2 className="text-3xl md:text-4xl font-extrabold text-[#194775] dark:text-white tracking-tight">{data.telemetry_kpis.avg_views_per_project}</h2>
+            </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-3xl shadow-sm relative overflow-hidden group">
-            <div className="absolute -right-6 -top-6 text-[#A07146]/10 group-hover:scale-110 transition-transform"><Award size={120} /></div>
-            <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Projeto Destaque</p>
-            {data.telemetry_kpis.top_project ? (
-              <div className="flex items-center gap-3 mt-3 relative z-10">
-                <div className="min-w-0">
-                  <h2 className="text-lg font-black text-[#A07146] truncate">{data.telemetry_kpis.top_project.titulo}</h2>
-                  <p className="text-xs font-semibold text-slate-500">{data.telemetry_kpis.top_project.views} views</p>
+          <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 p-6 rounded-3xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#A07146] opacity-30 dark:text-[#A07146] dark:opacity-30 group-hover:scale-110 transition-transform"><Award size={90} /></div>
+            <div className="relative z-10">
+              <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Projeto Destaque</p>
+              {data.telemetry_kpis.top_project ? (
+                <div className="flex items-center gap-3 mt-3 relative z-10">
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-black text-[#A07146] truncate">{data.telemetry_kpis.top_project.titulo}</h2>
+                    <p className="text-xs font-semibold text-slate-500">{data.telemetry_kpis.top_project.views} views</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <h2 className="text-xl font-bold text-slate-400 relative z-10 mt-3">Nenhum destaque</h2>
-            )}
-            {data.telemetry_kpis.top_project && data.telemetry_kpis.top_project.views > 100 && (
-              <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-3 flex items-center gap-2 relative z-10">
-                <span className="text-lg">🏆</span>
-                <p className="text-xs font-bold text-yellow-800 dark:text-yellow-500">
-                  Mais de 100 visualizações!
-                </p>
-              </div>
-            )}
+              ) : (
+                <h2 className="text-xl font-bold text-slate-400 relative z-10 mt-3">Nenhum destaque</h2>
+              )}
+              {data.telemetry_kpis.top_project && data.telemetry_kpis.top_project.views > 100 && (
+                <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-3 flex items-center gap-2 relative z-10">
+                  <span className="text-lg">🏆</span>
+                  <p className="text-xs font-bold text-yellow-800 dark:text-yellow-500">
+                    Mais de 100 visualizações!
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -191,7 +197,7 @@ const UserDashboard = () => {
                   onClick={() => setTimeRange(range)}
                   className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
                     timeRange === range
-                      ? 'bg-white dark:bg-slate-600 text-[#194775] dark:text-[#38bdf8] shadow-sm'
+                      ? 'bg-white dark:bg-slate-600 text-secondary-brand dark:text-accent-primary shadow-sm'
                       : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                   }`}
                 >
@@ -273,7 +279,7 @@ const UserDashboard = () => {
                     <td className="py-4 text-right">
                       <button 
                         onClick={() => navigate('/admin/projects')}
-                        className="p-2 text-[#194775] dark:text-[#38bdf8] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors inline-flex"
+                        className="p-2 text-secondary-brand dark:text-accent-primary bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors inline-flex"
                         title="Ir para tela de edição"
                       >
                         <Edit2 size={16} />
@@ -290,7 +296,7 @@ const UserDashboard = () => {
             <p>Você ainda não criou nenhum projeto.</p>
             <button 
               onClick={() => navigate('/admin/projects')}
-              className="mt-4 text-[#194775] font-bold hover:underline"
+              className="mt-4 text-secondary-brand font-bold hover:underline"
             >
               Comece agora criando o seu primeiro!
             </button>

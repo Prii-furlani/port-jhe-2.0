@@ -320,7 +320,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                   <input 
                     type="text" 
                     placeholder="Buscar ou criar tecnologia..."
-                    className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-[#194775] outline-none"
+                    className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-secondary-brand outline-none"
                     value={techSearch}
                     onChange={(e) => {
                       setTechSearch(e.target.value);
@@ -347,7 +347,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                       ))}
                       {techSearch && filteredTechs.length === 0 && (
                         <div 
-                          className="px-4 py-3 bg-sky-50 dark:bg-sky-900/30 text-[#194775] dark:text-[#38bdf8] cursor-pointer font-semibold flex items-center gap-2"
+                          className="px-4 py-3 bg-sky-50 dark:bg-sky-900/30 text-secondary-brand dark:text-accent-primary cursor-pointer font-semibold flex items-center gap-2"
                           onClick={handleCreateTech}
                         >
                           <Plus size={16} /> Criar tecnologia "{techSearch}"
@@ -359,7 +359,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                 {/* Tech Pills */}
                 <div className="flex flex-wrap gap-2 mt-3">
                   {selectedTechs.map(tech => (
-                    <span key={tech.id} className="bg-[#194775]/10 text-[#194775] dark:bg-[#38bdf8]/10 dark:text-[#38bdf8] px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
+                    <span key={tech.id} className="bg-secondary-brand/10 text-secondary-brand dark:bg-accent-primary/10 dark:text-accent-primary px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5">
                       {tech.icone_url && (
                         <img src={tech.icone_url.startsWith('http') ? tech.icone_url : `http://localhost:5000${tech.icone_url}`} alt={tech.nome} className="w-3.5 h-3.5 object-contain" />
                       )}
@@ -470,7 +470,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
           <button 
             onClick={() => handleSubmitForm('active')}
             disabled={isSaving}
-            className="px-5 py-2.5 rounded-xl font-bold bg-[#194775] text-white dark:bg-[#38bdf8] dark:text-slate-950 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+            className="px-5 py-2.5 rounded-xl font-bold bg-accent-primary text-slate-900 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
           >
             {isSaving ? 'Enviando...' : <><Send size={16} /> Submeter Projeto</>}
           </button>

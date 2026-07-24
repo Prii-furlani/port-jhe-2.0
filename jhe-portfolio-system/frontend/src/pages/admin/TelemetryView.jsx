@@ -42,12 +42,12 @@ const TelemetryView = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (!res.ok) {
         console.error('Erro ao exportar PDF');
         return;
       }
-      
+
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -65,8 +65,8 @@ const TelemetryView = () => {
   const COLORS = ['#38bdf8', '#194775', '#A07146', '#0ea5e9', '#0284c7'];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020817] p-8 font-sans transition-colors duration-300">
-      
+    <div className="min-h-screen bg-dominant-light dark:bg-dominant-dark p-8 font-sans transition-colors duration-300">
+
       {/* CABEÇALHO */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
         <div>
@@ -77,28 +77,27 @@ const TelemetryView = () => {
             </span>
             Monitoramento em Tempo Real
           </div>
-          <h1 className="text-3xl font-extrabold text-[#194775] dark:text-white mb-2">Telemetria & Analytics Executivo</h1>
+          <h1 className="text-3xl font-extrabold text-secondary-brand dark:text-white mb-2">Telemetria & Analytics Executivo</h1>
           <p className="text-slate-500 dark:text-slate-400 font-medium">Métricas de engajamento dos softwares, projetos e pesquisas na vitrine da JHE.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4">
-          <div className="bg-white dark:bg-[#081330] p-1.5 rounded-xl border border-slate-200 dark:border-white/10 flex gap-1 shadow-sm">
+          <div className="bg-white dark:bg-secondary-dark p-1.5 rounded-xl border border-slate-200 dark:border-white/10 flex gap-1 shadow-sm">
             {['7d', '30d', '90d', 'year'].map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
-                  period === p 
-                  ? 'bg-[#194775] text-white dark:bg-[#38bdf8] dark:text-slate-900 shadow-md' 
+                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${period === p
+                  ? 'bg-secondary-brand text-white dark:bg-accent-primary dark:text-slate-900 shadow-md'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
-                }`}
+                  }`}
               >
                 {p === '7d' ? '7 Dias' : p === '30d' ? '30 Dias' : p === '90d' ? '90 Dias' : 'Ano'}
               </button>
             ))}
           </div>
 
-          <button onClick={handleExport} className="bg-white dark:bg-[#081330] text-[#194775] dark:text-white border border-slate-200 dark:border-white/10 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm">
+          <button onClick={handleExport} className="bg-white dark:bg-secondary-dark text-secondary-brand dark:text-white border border-slate-200 dark:border-white/10 px-4 py-2.5 rounded-xl font-bold flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm">
             <Download size={18} /> Exportar
           </button>
         </div>
@@ -115,33 +114,49 @@ const TelemetryView = () => {
         <div className="space-y-8">
           {/* A. LINHA SUPERIOR: KPIs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-lg relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 text-[#194775]/5 dark:text-white/5 group-hover:scale-110 transition-transform"><Eye size={120} /></div>
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Total de Visualizações</p>
-              <h2 className="text-4xl font-black text-[#194775] dark:text-white relative z-10">{data.kpis.total_views}</h2>
+            <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#194775] opacity-40 dark:text-[#38bdf8] dark:opacity-30 group-hover:scale-110 transition-transform">
+                <Eye size={90} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Total de Visualizações</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-[#194775] dark:text-white tracking-tight">{data.kpis.total_views}</h2>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-lg relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 text-[#194775]/5 dark:text-white/5 group-hover:scale-110 transition-transform"><Users size={120} /></div>
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Visitantes Únicos</p>
-              <h2 className="text-4xl font-black text-[#194775] dark:text-white relative z-10">{data.kpis.unique_visitors}</h2>
+            <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#194775] opacity-40 dark:text-[#38bdf8] dark:opacity-30 group-hover:scale-110 transition-transform">
+                <Users size={90} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Visitantes Únicos</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-[#194775] dark:text-white tracking-tight">{data.kpis.unique_visitors}</h2>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-lg relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 text-[#194775]/5 dark:text-white/5 group-hover:scale-110 transition-transform"><BarChart2 size={120} /></div>
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Média Views/Visita</p>
-              <h2 className="text-4xl font-black text-[#194775] dark:text-white relative z-10">{data.kpis.avg_views_per_visitor}</h2>
+            <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#194775] opacity-40 dark:text-[#38bdf8] dark:opacity-30 group-hover:scale-110 transition-transform">
+                <BarChart2 size={90} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Média Views/Visita</p>
+                <h2 className="text-3xl md:text-4xl font-extrabold text-[#194775] dark:text-white tracking-tight">{data.kpis.avg_views_per_visitor}</h2>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-6 rounded-3xl shadow-lg relative overflow-hidden group">
-              <div className="absolute -right-6 -top-6 text-[#A07146]/5 dark:text-[#A07146]/10 group-hover:scale-110 transition-transform"><Award size={120} /></div>
-              <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 relative z-10">Categoria Dominante</p>
-              <h2 className="text-2xl mt-3 font-black text-[#A07146] dark:text-[#A07146] relative z-10 truncate" title={data.kpis.most_viewed_service}>{data.kpis.most_viewed_service}</h2>
+            <div className="relative bg-white dark:bg-[#020920] border border-slate-200/90 dark:border-white/10 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col justify-between group">
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 -rotate-12 transform text-[#A07146] opacity-30 dark:text-[#A07146] dark:opacity-30 group-hover:scale-110 transition-transform">
+                <Award size={90} />
+              </div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">Categoria Dominante</p>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-[#A07146] dark:text-[#A07146] tracking-tight truncate" title={data.kpis.most_viewed_service}>{data.kpis.most_viewed_service}</h2>
+              </div>
             </div>
           </div>
 
           {/* B. BLOCO CENTRAL 1: Gráfico Principal */}
-          <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg">
+          <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg">
             <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Tráfego de Visualizações ({period === '7d' ? 'Últimos 7 dias' : period === '30d' ? 'Últimos 30 dias' : period === '90d' ? 'Últimos 90 dias' : 'Ano Atual'})</h3>
             <div className="h-80 w-full">
               {data.time_series.length > 0 ? (
@@ -149,15 +164,15 @@ const TelemetryView = () => {
                   <AreaChart data={data.time_series} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#38bdf8" stopOpacity={0}/>
+                        <stop offset="5%" stopColor="#38bdf8" stopOpacity={0.8} />
+                        <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <XAxis dataKey="date" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.3} />
-                    <RechartsTooltip 
-                      contentStyle={{ backgroundColor: 'rgba(2, 9, 32, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontWeight: 'bold' }} 
+                    <RechartsTooltip
+                      contentStyle={{ backgroundColor: 'rgba(2, 9, 32, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontWeight: 'bold' }}
                       itemStyle={{ color: '#38bdf8' }}
                     />
                     <Area type="monotone" dataKey="views" stroke="#38bdf8" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" />
@@ -171,9 +186,9 @@ const TelemetryView = () => {
 
           {/* C. BLOCO CENTRAL 2: Donut & Top Projetos */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
+
             {/* Donut Chart */}
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg flex flex-col">
+            <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg flex flex-col">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Distribuição por Categoria</h3>
               <div className="flex-1 flex items-center justify-center">
                 {data.category_distribution.length > 0 ? (
@@ -193,8 +208,8 @@ const TelemetryView = () => {
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
-                      <RechartsTooltip 
-                        contentStyle={{ backgroundColor: 'rgba(2, 9, 32, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }} 
+                      <RechartsTooltip
+                        contentStyle={{ backgroundColor: 'rgba(2, 9, 32, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff' }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -214,7 +229,7 @@ const TelemetryView = () => {
             </div>
 
             {/* Top Projetos */}
-            <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg">
+            <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg">
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6">Top 5 Projetos Mais Acessados</h3>
               <div className="space-y-5">
                 {data.top_projects.length > 0 ? data.top_projects.map((proj, idx) => (
@@ -223,20 +238,20 @@ const TelemetryView = () => {
                       {proj.cover_image_url ? (
                         <img src={`http://localhost:5000${proj.cover_image_url}`} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{idx+1}</div>
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold">{idx + 1}</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{proj.title}</h4>
-                      <p className="text-xs font-semibold text-[#A07146] truncate">{proj.service_name}</p>
-                      
+                      <p className="text-xs font-semibold text-accent-secondary truncate">{proj.service_name}</p>
+
                       {/* Barra de Progresso Relativa */}
                       <div className="w-full h-1.5 bg-slate-100 dark:bg-white/10 rounded-full mt-2">
-                        <div className="h-full bg-[#38bdf8] rounded-full" style={{ width: `${(proj.views / data.top_projects[0].views) * 100}%` }}></div>
+                        <div className="h-full bg-accent-primary rounded-full" style={{ width: `${(proj.views / data.top_projects[0].views) * 100}%` }}></div>
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <span className="text-lg font-black text-[#194775] dark:text-white">{proj.views}</span>
+                      <span className="text-lg font-black text-secondary-brand dark:text-white">{proj.views}</span>
                       <p className="text-[10px] uppercase font-bold text-slate-500">views</p>
                     </div>
                   </div>
@@ -248,25 +263,25 @@ const TelemetryView = () => {
           </div>
 
           {/* D. BLOCO INFERIOR: Buscas */}
-          <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg flex flex-col md:flex-row gap-8 items-center justify-between">
+          <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 p-8 rounded-3xl shadow-lg flex flex-col md:flex-row gap-8 items-center justify-between">
             <div>
               <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-2">Termos Mais Buscados na Vitrine</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">O que os visitantes estão procurando ativamente.</p>
-              
+
               <div className="flex flex-wrap gap-3">
                 {data.top_searches.length > 0 ? data.top_searches.map((term, idx) => (
-                  <div key={idx} className="bg-slate-100 dark:bg-[#0f1d40] border border-slate-200 dark:border-white/5 px-4 py-2 rounded-full flex items-center gap-3 shadow-sm hover:scale-105 transition-transform cursor-default">
+                  <div key={idx} className="bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 px-4 py-2 rounded-full flex items-center gap-3 shadow-sm hover:scale-105 transition-transform cursor-default">
                     <span className="font-bold text-slate-700 dark:text-slate-200">{term.name}</span>
-                    <span className="bg-[#194775] text-white dark:bg-[#38bdf8] dark:text-slate-900 text-xs font-black px-2 py-0.5 rounded-full">{term.count}</span>
+                    <span className="bg-secondary-brand text-white dark:bg-accent-primary dark:text-slate-900 text-xs font-black px-2 py-0.5 rounded-full">{term.count}</span>
                   </div>
                 )) : (
                   <span className="text-slate-500 italic">Sem registros de busca.</span>
                 )}
               </div>
             </div>
-            
+
             <div className="hidden lg:flex p-6 bg-slate-50 dark:bg-black/20 rounded-2xl items-center gap-4 min-w-[300px]">
-              <div className="p-3 bg-[#194775]/10 dark:bg-[#38bdf8]/10 text-[#194775] dark:text-[#38bdf8] rounded-xl"><Activity size={24} /></div>
+              <div className="p-3 bg-secondary-brand/10 dark:bg-accent-primary/10 text-secondary-brand dark:text-accent-primary rounded-xl"><Activity size={24} /></div>
               <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Status do Sistema</p>
                 <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">API Telemetria Ativa & Atualizando</p>

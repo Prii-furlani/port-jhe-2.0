@@ -53,7 +53,7 @@ const Home = () => {
       </section>
 
       {/* Conteúdo Abaixo do Hero */}
-      <main className="home-container space-y-0 gap-0" style={{ paddingBottom: '4rem' }}>
+      <main className="home-container space-y-0 gap-0 pb-16 bg-dominant-light dark:bg-dominant-dark">
         
         {/* Pilares Institucionais */}
         <section id="pilares" className="mt-0 pt-0">
@@ -61,16 +61,16 @@ const Home = () => {
         </section>
 
         {/* Linha do Tempo (Timeline) */}
-        <section id="historia" style={{ padding: '4rem 0', backgroundColor: 'var(--bg-deep)' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-color)' }}>Nossa Trajetória</h2>
-            <p style={{ color: 'var(--text-muted)', marginTop: '0.75rem', fontSize: '1.1rem' }}>Conheça os principais marcos da nossa história desde 1995.</p>
+        <section id="historia" className="py-16 bg-dominant-light dark:bg-dominant-dark">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Nossa Trajetória</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-3 text-lg">Conheça os principais marcos da nossa história desde 1995.</p>
           </div>
           <TimelineSection />
         </section>
 
-        <section id="portfolio" className="portfolio-section" style={{ paddingTop: '4rem' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+        <section id="portfolio" className="portfolio-section pt-16 pb-16 bg-secondary-light dark:bg-secondary-dark">
+          <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3">Softwares e Projetos Desenvolvidos</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-2 text-lg">Conheça nosso portfólio de soluções tecnológicas.</p>
           </div>

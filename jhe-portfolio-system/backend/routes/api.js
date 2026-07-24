@@ -22,6 +22,7 @@ const uploadClient = require('../config/uploadClient');
 const uploadProject = require('../config/uploadProject');
 const pillarController = require('../controllers/pillarController');
 const timelineController = require('../controllers/timelineController');
+const userAdminController = require('../controllers/userAdminController');
 
 // Rota do Dashboard (Somente Admin Master)
 router.get('/admin/dashboard/summary', verifyToken, requireMasterAdmin, adminController.getDashboardSummary);
@@ -34,6 +35,13 @@ router.get('/admin/audit-logs/export/pdf', verifyToken, requireMasterAdmin, audi
 router.get('/admin/projects/pending', verifyToken, requireMasterAdmin, reviewController.getPendingProjects);
 router.patch('/admin/projects/:id/approve', verifyToken, requireMasterAdmin, reviewController.approveProject);
 router.patch('/admin/projects/:id/reject', verifyToken, requireMasterAdmin, reviewController.rejectProject);
+
+// Rotas de Gestão de Usuários (Somente Admin Master)
+router.get('/admin/users', verifyToken, requireMasterAdmin, userAdminController.getAllUsers);
+router.post('/admin/users', verifyToken, requireMasterAdmin, userAdminController.createUser);
+router.put('/admin/users/:id', verifyToken, requireMasterAdmin, userAdminController.updateUser);
+router.patch('/admin/users/:id/reset-password', verifyToken, requireMasterAdmin, userAdminController.resetPassword);
+router.patch('/admin/users/:id/status', verifyToken, requireMasterAdmin, userAdminController.toggleStatus);
 
 // Rotas da Linha do Tempo (CRUD)
 router.get('/timeline', timelineController.getAllEvents);

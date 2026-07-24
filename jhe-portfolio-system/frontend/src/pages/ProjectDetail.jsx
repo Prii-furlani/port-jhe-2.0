@@ -54,7 +54,7 @@ const ProjectDetail = () => {
   const statusInfo = statusMap[project.status] || { label: project.status, icon: CheckCircle, color: 'text-slate-400' };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#020817] text-slate-700 dark:text-slate-300 font-sans selection:bg-[#38bdf8]/30 transition-colors duration-300">
+    <div className="min-h-screen bg-dominant-light dark:bg-dominant-dark text-slate-700 dark:text-slate-300 font-sans selection:bg-accent-primary/30 transition-colors duration-300">
       <Navbar />
 
       {/* 1. SEÇÃO HERO SUPERIOR */}
@@ -66,15 +66,15 @@ const ProjectDetail = () => {
             alt={project.titulo} 
             className="w-full h-full object-cover"
           />
-          {/* Overlay Claro / Escuro (dependendo do tema não podemos mudar gradiente por trás da img tão fácil se não for CSS, mas usaremos bg escuro no texto) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-100 dark:from-[#020817] via-slate-100/80 dark:via-[#020817]/80 to-black/30 dark:to-black/30" />
+          {/* Overlay Claro / Escuro */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-100 dark:from-dominant-dark via-slate-100/80 dark:via-dominant-dark/80 to-black/30 dark:to-black/30" />
         </div>
 
         {/* Card Flutuante Sobreposto */}
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pb-12">
-          <div className="max-w-2xl bg-white/90 dark:bg-[#081330]/85 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-3xl p-8 md:p-10 text-slate-800 dark:text-white shadow-2xl transition-colors">
+          <div className="max-w-2xl bg-white/90 dark:bg-secondary-dark/85 backdrop-blur-md border border-slate-200 dark:border-white/10 rounded-3xl p-8 md:p-10 text-slate-800 dark:text-white shadow-2xl transition-colors">
             
-            <Link to="/" className="inline-flex items-center gap-2 text-[#194775] dark:text-slate-400 hover:text-sky-600 dark:hover:text-white transition-colors text-sm mb-6 font-semibold tracking-wide">
+            <Link to="/" className="inline-flex items-center gap-2 text-secondary-brand dark:text-slate-400 hover:text-sky-600 dark:hover:text-white transition-colors text-sm mb-6 font-semibold tracking-wide">
               <ArrowLeft size={16} /> VOLTAR PARA O PORTFÓLIO
             </Link>
 
@@ -84,14 +84,14 @@ const ProjectDetail = () => {
                 Jornada de Transformação
               </div>
               {(project.setor || project.servico_nome) && (
-                <div className="inline-block px-3 py-1 bg-[#A07146]/10 dark:bg-[#A07146]/20 border border-[#A07146]/30 text-[#A07146] text-[11px] font-black uppercase tracking-widest rounded-full">
+                <div className="inline-block px-3 py-1 bg-accent-secondary/10 dark:bg-accent-secondary/20 border border-accent-secondary/30 text-accent-secondary text-[11px] font-black uppercase tracking-widest rounded-full">
                   {project.setor || project.servico_nome}
                 </div>
               )}
             </div>
             
             {/* Título Principal */}
-            <h1 className="text-3xl md:text-5xl font-extrabold text-[#194775] dark:text-white mb-6 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-extrabold text-secondary-brand dark:text-white mb-6 leading-tight">
               {project.titulo}
             </h1>
 
@@ -99,19 +99,19 @@ const ProjectDetail = () => {
             <div className="flex flex-wrap items-center gap-6 text-sm font-semibold text-slate-600 dark:text-slate-300">
               {project.localizacao && (
                 <div className="flex items-center gap-2">
-                  <MapPin size={16} className="text-[#38bdf8]" />
+                  <MapPin size={16} className="text-accent-primary" />
                   <span>{project.localizacao}</span>
                 </div>
               )}
               {project.ano_desenvolvimento && (
                 <div className="flex items-center gap-2">
-                  <Calendar size={16} className="text-[#38bdf8]" />
+                  <Calendar size={16} className="text-accent-primary" />
                   <span>{project.ano_desenvolvimento}</span>
                 </div>
               )}
               {project.cliente_nome && (
                 <div className="flex items-center gap-2">
-                  <Building2 size={16} className="text-[#38bdf8]" />
+                  <Building2 size={16} className="text-accent-primary" />
                   <span>{project.cliente_nome}</span>
                 </div>
               )}
@@ -132,7 +132,7 @@ const ProjectDetail = () => {
           <div className="lg:col-span-1 space-y-8 sticky top-32">
             
             <div>
-              <h3 className="border-l-4 border-[#A07146] pl-3 text-xl font-bold text-slate-800 dark:text-white mb-1">
+              <h3 className="border-l-4 border-accent-secondary pl-3 text-xl font-bold text-slate-800 dark:text-white mb-1">
                 Ficha Técnica
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -142,17 +142,17 @@ const ProjectDetail = () => {
 
             {/* Box 1: Tecnologias Utilizadas */}
             {project.tecnologias && project.tecnologias.length > 0 && (
-              <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 transition-colors">
+              <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 transition-colors">
                 <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                   Tecnologias Utilizadas
                 </h4>
                 <div className="flex flex-col gap-3">
                   {project.tecnologias.map(tech => (
-                    <div key={tech.id} className="flex items-center gap-3 bg-slate-50 dark:bg-[#0f1d40] px-3 py-2 rounded-xl border border-slate-100 dark:border-white/5">
+                    <div key={tech.id} className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 px-3 py-2 rounded-xl border border-slate-100 dark:border-white/5">
                       {tech.icone_url ? (
                         <img src={tech.icone_url.startsWith('http') ? tech.icone_url : `http://localhost:5000${tech.icone_url}`} alt={tech.nome} className="w-5 h-5 object-contain" />
                       ) : (
-                        <CheckCircle2 size={16} className="text-[#38bdf8]" />
+                        <CheckCircle2 size={16} className="text-accent-primary" />
                       )}
                       <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{tech.nome}</span>
                     </div>
@@ -163,7 +163,7 @@ const ProjectDetail = () => {
 
             {/* Box 2: Equipe Técnica / Pessoas Interessadas */}
             {project.stakeholders && project.stakeholders.length > 0 && (
-              <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 transition-colors">
+              <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 shadow-xl rounded-2xl p-6 transition-colors">
                 <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
                   Mentes por trás deste projeto
                 </h4>
@@ -183,7 +183,7 @@ const ProjectDetail = () => {
                 href={project.link_oficial} 
                 target="_blank" 
                 rel="noreferrer"
-                className="w-full bg-[#194775] text-white dark:bg-[#38bdf8] dark:text-slate-950 font-bold px-4 py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-sky-700 dark:hover:bg-[#38bdf8]/90 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 transition-all"
+                className="w-full bg-secondary-brand text-white dark:bg-accent-primary dark:text-slate-950 font-bold px-4 py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-sky-700 dark:hover:bg-accent-primary/90 hover:scale-[1.02] hover:shadow-lg hover:shadow-sky-500/20 transition-all"
               >
                 Acessar Projeto/Software <ExternalLink size={18} />
               </a>
@@ -211,7 +211,7 @@ const ProjectDetail = () => {
                 
                 {project.desafios && (
                   <div className="bg-slate-100 dark:bg-slate-800/50 rounded-2xl p-8 border-l-4 border-slate-300 dark:border-slate-700">
-                    <span className="block text-[#A07146] font-black text-sm tracking-widest uppercase mb-2">01. O Desafio Humano & Técnico</span>
+                    <span className="block text-accent-secondary font-black text-sm tracking-widest uppercase mb-2">01. O Desafio Humano & Técnico</span>
                     <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white mb-6">O Contexto Antes da JHE</h2>
                     <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-200 leading-relaxed text-base md:text-lg font-sans">
                       {project.desafios.split('\n').map((para, i) => (
@@ -225,17 +225,17 @@ const ProjectDetail = () => {
 
             {/* Bloco 2: Destaque Solução de Engenharia (Callout Box) */}
             {project.metodologias && (
-              <div className="bg-gradient-to-r from-[#0c1c48] to-[#194775] border-l-4 border-[#38bdf8] p-8 rounded-2xl shadow-xl relative overflow-hidden transition-colors">
+              <div className="bg-gradient-to-r from-secondary-dark to-secondary-brand border-l-4 border-accent-primary p-8 rounded-2xl shadow-xl relative overflow-hidden transition-colors">
                 <div className="absolute top-0 right-0 p-8 opacity-[0.03] dark:opacity-5 text-white">
                   <Activity size={120} />
                 </div>
                 <div className="relative z-10">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="bg-[#38bdf8]/20 p-3 rounded-xl text-[#38bdf8]">
+                    <div className="bg-accent-primary/20 p-3 rounded-xl text-accent-primary">
                       <CheckCircle2 size={24} />
                     </div>
                     <div>
-                      <span className="block text-[#38bdf8] font-black text-sm tracking-widest uppercase mb-1">02. A Solução JHE</span>
+                      <span className="block text-accent-primary font-black text-sm tracking-widest uppercase mb-1">02. A Solução JHE</span>
                       <h3 className="text-2xl font-bold text-white">Engenharia & Inovação</h3>
                     </div>
                   </div>
@@ -250,14 +250,14 @@ const ProjectDetail = () => {
 
             {/* Bloco 2.5: KPIs de Impacto (Big Numbers) */}
             {project.kpis_impacto && (
-              <div className="bg-white dark:bg-[#081330] border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-xl">
-                <h3 className="text-sm font-bold text-[#A07146] uppercase tracking-[0.2em] mb-8 border-b border-slate-200 dark:border-white/10 pb-4">
+              <div className="bg-white dark:bg-secondary-dark border border-slate-200 dark:border-white/5 rounded-3xl p-8 shadow-xl">
+                <h3 className="text-sm font-bold text-accent-secondary uppercase tracking-[0.2em] mb-8 border-b border-slate-200 dark:border-white/10 pb-4">
                   03. O Legado e os Resultados
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {project.kpis_impacto.split('\n').filter(k => k.trim()).map((kpi, idx) => (
                     <div key={idx} className="bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800/50 rounded-2xl p-6 text-center shadow-sm">
-                      <p className="text-lg md:text-xl font-black text-[#194775] dark:text-[#38bdf8] leading-tight">
+                      <p className="text-lg md:text-xl font-black text-secondary-brand dark:text-accent-primary leading-tight">
                         {kpi}
                       </p>
                     </div>
@@ -269,7 +269,7 @@ const ProjectDetail = () => {
             {/* Bloco 3: Galeria de Fotos / Registros de Campo */}
             {project.galeria && project.galeria.length > 0 && (
               <div>
-                <h3 className="text-sm font-bold text-[#A07146] uppercase tracking-[0.2em] mb-8 border-b border-slate-200 dark:border-white/10 pb-4">
+                <h3 className="text-sm font-bold text-accent-secondary uppercase tracking-[0.2em] mb-8 border-b border-slate-200 dark:border-white/10 pb-4">
                   Registros de Campo & Dados
                 </h3>
                 

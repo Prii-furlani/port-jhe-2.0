@@ -12,10 +12,10 @@ const ProjectCard = ({ project }) => {
       onClick={() => navigate(`/projetos/${project.id}`)}
       className="group relative h-[420px] w-full perspective-1000 cursor-pointer"
     >
-      <div className="relative w-full h-full transition-transform duration-700 preserve-3d group-hover:my-rotate-y-180 rounded-3xl shadow-sm hover:shadow-2xl bg-white dark:bg-[#020931]">
+      <div className="relative w-full h-full transition-transform duration-700 preserve-3d group-hover:my-rotate-y-180 rounded-3xl shadow-sm hover:shadow-2xl bg-secondary-light dark:bg-secondary-dark">
       
       {/* Camada FRONT (Frente) */}
-      <div className="absolute inset-0 w-full h-full p-6 flex flex-col justify-between transition-opacity duration-500 group-hover:opacity-0 z-10 bg-white dark:bg-[#020920] rounded-3xl overflow-hidden backface-hidden">
+      <div className="absolute inset-0 w-full h-full p-6 flex flex-col justify-between transition-opacity duration-500 group-hover:opacity-0 z-10 bg-secondary-light dark:bg-secondary-dark rounded-3xl overflow-hidden backface-hidden">
         
         {/* Header do Card (Imagem Redonda no Topo e Badge) */}
         <div>
@@ -31,7 +31,7 @@ const ProjectCard = ({ project }) => {
 
           <div className="flex flex-col gap-2">
             {project.servico_nome && (
-              <span className="self-start px-3 py-1 bg-[#194775]/10 text-[#194775] dark:bg-[#38bdf8]/10 dark:text-[#38bdf8] text-xs font-black rounded-full uppercase tracking-widest">
+              <span className="self-start px-3 py-1 bg-secondary-brand/10 text-secondary-brand dark:bg-accent-primary/10 dark:text-accent-primary text-xs font-black rounded-full uppercase tracking-widest">
                 {project.servico_nome}
               </span>
             )}
@@ -41,14 +41,14 @@ const ProjectCard = ({ project }) => {
             
             <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1">
               <span className="flex items-center gap-1.5">
-                <MapPin size={16} className="text-[#A07146]" />
+                <MapPin size={16} className="text-accent-secondary" />
                 {project.cliente_nome || project.setor || 'Brasil'}
               </span>
               {project.ano_desenvolvimento && (
                 <>
                   <span className="text-slate-300 dark:text-slate-600">•</span>
                   <span className="flex items-center gap-1.5">
-                    <Calendar size={14} className="text-[#194775] dark:text-[#38bdf8]" />
+                    <Calendar size={14} className="text-secondary-brand dark:text-accent-primary" />
                     {project.ano_desenvolvimento}
                   </span>
                 </>
@@ -76,16 +76,16 @@ const ProjectCard = ({ project }) => {
       </div>
 
       {/* Camada BACK (Verso/Hover) */}
-      <div className="absolute inset-0 w-full h-full bg-[#194775]/95 dark:bg-[#020931]/95 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 flex flex-col p-8 justify-between text-white shadow-inner my-rotate-y-180 backface-hidden rounded-3xl">
+      <div className="absolute inset-0 w-full h-full bg-secondary-brand/95 dark:bg-secondary-dark/95 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 z-20 flex flex-col p-8 justify-between text-white shadow-inner my-rotate-y-180 backface-hidden rounded-3xl">
         
         <div className="mt-4">
-          <span className="text-[#38bdf8] text-xs font-black uppercase tracking-widest mb-3 inline-block">Visão Geral do Projeto</span>
+          <span className="text-accent-primary text-xs font-black uppercase tracking-widest mb-3 inline-block">Visão Geral do Projeto</span>
           <p className="text-base font-medium text-slate-100 leading-relaxed line-clamp-6">
             {project.resumo_curto || project.descricao_detalhada || 'Um projeto de alto impacto envolvendo planejamento avançado e execução meticulosa para garantir os melhores resultados operacionais e ambientais.'}
           </p>
         </div>
 
-        <button className="w-full bg-[#38bdf8] text-slate-900 font-extrabold py-3.5 rounded-xl hover:bg-white transition-colors duration-300 flex items-center justify-center gap-2 group/btn mt-auto">
+        <button className="w-full bg-accent-primary text-slate-900 font-extrabold py-3.5 rounded-xl hover:bg-white transition-colors duration-300 flex items-center justify-center gap-2 group/btn mt-auto">
           VER DETALHES TÉCNICOS 
           <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
         </button>

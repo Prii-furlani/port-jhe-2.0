@@ -13,7 +13,8 @@ import {
   Sun,
   LogOut,
   BarChart2,
-  ClipboardCheck
+  ClipboardCheck,
+  Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -95,6 +96,11 @@ const Sidebar = ({ onOpenPasswordModal }) => {
               <Link to="/admin/telemetry" className={`sidebar-link ${isActive('/admin/telemetry')}`}>
                 <Activity size={18} />
                 <span>Telemetria Executiva</span>
+              </Link>
+
+              <Link to="/admin/users" className={`sidebar-link ${isActive('/admin/users')}`}>
+                <Users size={18} />
+                <span>Gestão de Usuários</span>
               </Link>
 
               <Link to="/admin/audit-logs" className={`sidebar-link ${isActive('/admin/audit-logs')}`}>
