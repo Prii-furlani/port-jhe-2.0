@@ -5,6 +5,7 @@ import {
   KeyRound, UserX, UserCheck, ArrowUp, ArrowDown, ArrowUpDown 
 } from 'lucide-react';
 import UserModalForm from '../../components/Modals/UserModalForm';
+import { showAlertSuccess, showAlertError, showConfirmDialog } from '../../utils/alerts';
 
 const UserManager = () => {
   const { user, token } = useAuth();
@@ -99,22 +100,24 @@ const UserManager = () => {
       if (data.success) {
         setIsModalOpen(false);
         fetchUsers();
-        alert(data.message);
+        showAlertSuccess('Sucesso', data.message);
       } else {
-        alert(data.error || 'Erro ao processar.');
+        showAlertError('Erro', data.error || 'Erro ao processar.');
       }
     } catch (err) {
       console.error(err);
-      alert('Erro interno de conexão.');
+      showAlertError('Erro', 'Erro interno de conexão.');
     }
   };
 
   const handleToggleStatus = async (userObj) => {
     const isAtivo = userObj.ativo;
     if (isAtivo) {
-      if (!window.confirm("Deseja inativar este usuário? Os projetos criados por ele permanecerão no histórico sob gestão do Admin Master.")) return;
+      const confirm = await showConfirmDialog("Atenção", "Deseja inativar este usuário? Os projetos criados por ele permanecerão no histórico sob gestão do Admin Master.");
+      if (!confirm) return;
     } else {
-      if (!window.confirm("Deseja ativar este usuário novamente?")) return;
+      const confirm = await showConfirmDialog("Atenção", "Deseja ativar este usuário novamente?");
+      if (!confirm) return;
     }
 
     try {
@@ -125,17 +128,19 @@ const UserManager = () => {
       const data = await res.json();
       if (data.success) {
         fetchUsers();
+        showAlertSuccess('Sucesso', data.message || `Status atualizado com sucesso.`);
       } else {
-        alert(data.error);
+        showAlertError('Erro', data.error);
       }
     } catch (err) {
       console.error(err);
-      alert('Erro ao alterar status.');
+      showAlertError('Erro', 'Erro ao alterar status.');
     }
   };
 
   const handleResetPassword = async (userObj) => {
-    if (!window.confirm(`Tem certeza que deseja resetar a senha de ${userObj.nome} para "123456"?`)) return;
+    const confirm = await showConfirmDialog("Resetar Senha", `Tem certeza que deseja resetar a senha de ${userObj.nome} para "123456"?`);
+    if (!confirm) return;
 
     try {
       const res = await fetch(`http://localhost:5000/api/admin/users/${userObj.id}/reset-password`, {
@@ -144,13 +149,13 @@ const UserManager = () => {
       });
       const data = await res.json();
       if (data.success) {
-        alert(data.message);
+        showAlertSuccess('Sucesso', data.message);
       } else {
-        alert(data.error);
+        showAlertError('Erro', data.error);
       }
     } catch (err) {
       console.error(err);
-      alert('Erro ao resetar senha.');
+      showAlertError('Erro', 'Erro ao resetar senha.');
     }
   };
 
@@ -163,6 +168,8 @@ const UserManager = () => {
     setUserToEdit(userObj);
     setIsModalOpen(true);
   };
+
+  const isCurrentUser = (id) => user?.id === id;
 
   if (user?.role !== 'admin_master') {
     return (
@@ -257,7 +264,14 @@ const UserManager = () => {
                 {sortedUsers.length > 0 ? (
                   sortedUsers.map(u => (
                     <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group">
-                      <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-200">{u.nome}</td>
+                      <td className="py-4 px-4 font-bold text-slate-800 dark:text-slate-200">
+                        {u.nome}
+                        {isCurrentUser(u.id) && (
+                          <span className="ml-2 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#194775]/10 text-[#194775] dark:bg-[#38bdf8]/20 dark:text-[#38bdf8]">
+                            Sua Conta
+                          </span>
+                        )}
+                      </td>
                       <td className="py-4 px-4 text-slate-600 dark:text-slate-400">{u.email}</td>
                       <td className="py-4 px-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -284,8 +298,13 @@ const UserManager = () => {
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
                             onClick={() => handleResetPassword(u)}
-                            title="Resetar Senha"
-                            className="p-2 rounded-lg bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:hover:bg-orange-500/40 transition-colors"
+                            disabled={isCurrentUser(u.id)}
+                            title={isCurrentUser(u.id) ? "Para alterar sua senha, use a opção 'Alterar Senha' no menu lateral." : "Resetar Senha"}
+                            className={`p-2 rounded-lg transition-colors ${
+                              isCurrentUser(u.id) 
+                              ? 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 cursor-not-allowed'
+                              : 'bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:hover:bg-orange-500/40'
+                            }`}
                           >
                             <KeyRound size={16} />
                           </button>
@@ -300,11 +319,14 @@ const UserManager = () => {
                           
                           <button 
                             onClick={() => handleToggleStatus(u)}
-                            title={u.ativo ? "Inativar Usuário" : "Ativar Usuário"}
+                            disabled={isCurrentUser(u.id)}
+                            title={isCurrentUser(u.id) ? "Você não pode inativar seu próprio usuário." : u.ativo ? "Inativar Usuário" : "Ativar Usuário"}
                             className={`p-2 rounded-lg transition-colors ${
-                              u.ativo 
-                              ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/40' 
-                              : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/40'
+                              isCurrentUser(u.id)
+                              ? 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 cursor-not-allowed'
+                              : u.ativo 
+                                ? 'bg-red-100 text-red-600 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/40' 
+                                : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/40'
                             }`}
                           >
                             {u.ativo ? <UserX size={16} /> : <UserCheck size={16} />}
@@ -329,6 +351,7 @@ const UserManager = () => {
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleSubmitUser}
         userToEdit={userToEdit}
+        isCurrentUser={userToEdit && isCurrentUser(userToEdit.id)}
       />
     </div>
   );

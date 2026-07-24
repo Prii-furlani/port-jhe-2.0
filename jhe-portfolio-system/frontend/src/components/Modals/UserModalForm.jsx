@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
+import { X, Check, ShieldAlert } from 'lucide-react';
 
-const UserModalForm = ({ isOpen, onClose, onSubmit, userToEdit = null }) => {
+const UserModalForm = ({ isOpen, onClose, onSubmit, userToEdit = null, isCurrentUser = false }) => {
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
@@ -85,16 +85,31 @@ const UserModalForm = ({ isOpen, onClose, onSubmit, userToEdit = null }) => {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Perfil de Acesso (RBAC)</label>
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex justify-between">
+              Perfil de Acesso (RBAC)
+              {isCurrentUser && (
+                <span className="text-[10px] uppercase tracking-wider text-orange-500 flex items-center gap-1">
+                  <ShieldAlert size={12} /> Bloqueado
+                </span>
+              )}
+            </label>
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#194775] dark:focus:ring-[#38bdf8] outline-none transition-all"
+              disabled={isCurrentUser}
+              className={`w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 outline-none transition-all appearance-none ${
+                isCurrentUser 
+                ? 'bg-slate-100 dark:bg-white/5 text-slate-500 cursor-not-allowed' 
+                : 'bg-slate-50 dark:bg-black/20 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#194775] dark:focus:ring-[#38bdf8]'
+              }`}
             >
               <option value="user">Usuário Padrão (Colaborador)</option>
               <option value="admin_master">Administrador Master</option>
             </select>
+            {isCurrentUser && (
+              <p className="text-xs text-slate-500 mt-1">Para alterar seu próprio papel de acesso, solicite a outro Administrador Master.</p>
+            )}
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ShieldAlert, Activity, Search, Server, User, Calendar, Fingerprint, Download, X, FileSpreadsheet, FileText, Table, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react';
+import { showAlertError } from '../../utils/alerts';
 
 const AuditLogs = () => {
   const { user, token } = useAuth();
@@ -106,7 +107,7 @@ const AuditLogs = () => {
       setShowExportModal(false);
     } catch (error) {
       console.error('Erro ao exportar:', error);
-      alert('Erro ao exportar PDF');
+      showAlertError('Erro', 'Falha ao exportar PDF');
     } finally {
       setExporting(false);
     }
@@ -190,14 +191,14 @@ const AuditLogs = () => {
             <Activity size={20} color="var(--primary-color)" /> Registro de Atividades
           </h2>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <div className="search-bar" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', width: '300px' }}>
-              <Search size={18} color="var(--text-muted)" style={{ marginRight: '0.5rem' }} />
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input 
                 type="text" 
                 placeholder="Buscar ação, tabela ou usuário..." 
                 value={searchTerm}
                 onChange={handleSearch}
-                style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', outline: 'none', width: '100%', fontSize: '0.9rem' }}
+                className="pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#020920] text-slate-900 dark:text-white focus:ring-2 focus:ring-[#194775] dark:focus:ring-[#38bdf8] outline-none text-sm w-72 transition-all shadow-sm"
               />
             </div>
             <button 

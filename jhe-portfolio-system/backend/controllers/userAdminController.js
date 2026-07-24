@@ -62,6 +62,16 @@ exports.createUser = async (req, res) => {
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
     const { nome, email, role } = req.body;
+    
+    // Trava de Segurança: Auto-rebaixamento
+    if (req.user.id == id && role === 'user') {
+        return res.status(403).json({
+            success: false,
+            error: 'Ação não permitida',
+            message: 'Você não pode remover seus próprios privilégios de Administrador Master. Solicite a outro administrador.'
+        });
+    }
+
     try {
         const [existing] = await pool.query('SELECT id FROM usuarios WHERE email = ? AND id != ?', [email, id]);
         if (existing.length > 0) {
@@ -104,6 +114,16 @@ exports.resetPassword = async (req, res) => {
 
 exports.toggleStatus = async (req, res) => {
     const { id } = req.params;
+
+    // Trava de Segurança: Auto-inativação
+    if (req.user.id == id) {
+        return res.status(403).json({
+            success: false,
+            error: 'Ação não permitida',
+            message: 'Você não pode inativar a sua própria conta de administrador.'
+        });
+    }
+
     try {
         const [rows] = await pool.query('SELECT ativo FROM usuarios WHERE id = ?', [id]);
         if (rows.length === 0) return res.status(404).json({ success: false, error: 'Usuário não encontrado' });
