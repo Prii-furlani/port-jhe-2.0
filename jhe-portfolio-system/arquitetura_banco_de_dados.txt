@@ -1,0 +1,234 @@
+-- Arquitetura do Banco de Dados: jhe_portfolio_db_2.0
+-- Este script DDL é compatível com phpMyAdmin (MySQL).
+
+CREATE DATABASE IF NOT EXISTS jhe_portfolio_db_2 CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE jhe_portfolio_db_2;
+
+-- 1. Tabela: usuarios
+-- Armazena os usuários do sistema, suportando roles para controle de acesso.
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    role ENUM('admin_master', 'user') NOT NULL DEFAULT 'user',
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Tabela: clientes
+-- Clientes que possuem projetos registrados.
+CREATE TABLE IF NOT EXISTS clientes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    logo_url VARCHAR(255),
+    setor VARCHAR(100),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Tabela: projetos
+-- Portfólio de projetos realizados.
+CREATE TABLE IF NOT EXISTS projetos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(150) NOT NULL,
+    cliente_id INT NOT NULL,
+    setor VARCHAR(100),
+    descricao TEXT,
+    imagem_url VARCHAR(255),
+    link_oficial VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'concluido',
+    created_by INT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+-- 4. Tabela: servicos
+-- Serviços oferecidos.
+CREATE TABLE IF NOT EXISTS servicos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    icone VARCHAR(100),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Tabela: tecnologias
+-- Tecnologias utilizadas.
+CREATE TABLE IF NOT EXISTS tecnologias (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    icone_url VARCHAR(255),
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 6. Tabela: config_home
+-- Configurações gerais da página inicial.
+CREATE TABLE IF NOT EXISTS config_home (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    chave VARCHAR(100) NOT NULL UNIQUE,
+    valor TEXT NOT NULL,
+    atualizado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 7. Tabela: telemetria_sessoes
+-- Registro de acessos e sessões de usuários/visitantes.
+CREATE TABLE IF NOT EXISTS telemetria_sessoes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ip_hash VARCHAR(255) NOT NULL,
+    user_agent TEXT,
+    data_acesso TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. Tabela: telemetria_cliques
+-- Registro de cliques em Call-to-Actions ou visualização de projetos.
+CREATE TABLE IF NOT EXISTS telemetria_cliques (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    identificador_cta VARCHAR(100) NOT NULL,
+    tipo VARCHAR(50),
+    projeto_id INT,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (projeto_id) REFERENCES projetos(id) ON DELETE SET NULL
+);
+
+-- 9. Tabela: auditoria_logs
+-- Registro de ações críticas dentro do sistema administrativo.
+CREATE TABLE IF NOT EXISTS auditoria_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_id INT,
+    acao VARCHAR(100) NOT NULL,
+    tabela_afetada VARCHAR(100),
+    registro_id INT,
+    ip_originario VARCHAR(100),
+    status VARCHAR(50),
+    detalhes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE SET NULL
+);
+
+
+-- =========================================================
+-- CARGAS INICIAIS (INSERTS)
+-- =========================================================
+
+-- Inserção de usuários iniciais com senhas reais hasheadas via bcrypt
+INSERT INTO usuarios (nome, email, senha, role, ativo) VALUES 
+('Leandro Neves', 'leandro.neves@jhe.com.br', '$2a$10$mRRItVM0YniJ6.2hDYfuqO8vu3aM8nuYZKdfhB57afsExV.KJ/ukW', 'admin_master', 1),
+('Priscila Manzoni Furlani', 'priscila.furlani@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1),
+('Isabelly Almeida', 'isabelly.almeida@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1);
+
+-- Inserção de configurações da Home
+INSERT INTO config_home (chave, valor) VALUES 
+('hero_title', 'Soluções Corporativas com Excelência'),
+('hero_subtitle', 'Impulsionando o crescimento da sua empresa com tecnologia e inovação.'),
+('contact_email', 'contato@jhe.com');
+
+
+-- =========================================================
+-- CARGA INICIAL: CLIENTES E PROJETOS JHE
+-- =========================================================
+
+-- 1. Inserção do Catálogo de Clientes
+INSERT INTO clientes (id, nome, setor) VALUES 
+(1, 'FDE - Fundação para o Desenvolvimento da Educação', 'Educação'),
+(2, 'SABESP - Cia de Saneamento Básico do Estado de SP', 'Saneamento'),
+(3, 'CDHU - Cia de Desenvolvimento Habitacional e Urbano', 'Habitação'),
+(4, 'DERSA - Desenvolvimento Rodoviário SA', 'Infraestrutura/Rodovias'),
+(5, 'DER - Departamento de Estradas de Rodagem SP', 'Infraestrutura/Rodovias'),
+(6, 'METRÔ - Cia do Metropolitano de São Paulo', 'Mobilidade Urbana'),
+(7, 'ARTESP - Agência de Transporte do Estado de SP', 'Infraestrutura/Rodovias'),
+(8, 'DAEE - Departamento de Águas e Energia Elétrica', 'Recursos Hídricos'),
+(9, 'Secretaria de Saneamento e Recursos Hídricos SP', 'Saneamento'),
+(10, 'SP-OBRAS - São Paulo Obras', 'Infraestrutura Urbana'),
+(11, 'SP-URBANISMO - Urbanismo de São Paulo', 'Desenvolvimento Urbano'),
+(12, 'Prefeitura do Município de São Paulo', 'Gestão Pública'),
+(13, 'Secretaria Municipal de Habitação SP', 'Habitação'),
+(14, 'Ministério das Cidades / Sec. de Saneamento', 'Saneamento'),
+(15, 'Governo do Estado de SP / Sec. de Saneamento', 'Saneamento'),
+(16, 'PNUD - Prog. das Nações Unidas / Min. do Planejamento', 'Gestão Estratégica'),
+(17, 'Prefeitura de SBC / EMHAP', 'Habitação'),
+(18, 'CONDER - Cia de Desenvolvimento Urbano da Bahia', 'Desenvolvimento Urbano'),
+(19, 'CAESB - Cia de Saneamento Ambiental do DF', 'Saneamento'),
+(20, 'Prefeitura Municipal de Ortigueira', 'Gestão Pública');
+
+-- 2. Inserção do Portfólio de Projetos / Serviços Prestados
+INSERT INTO projetos (titulo, cliente_id, setor, status, created_by) VALUES
+('Gerenciamento, Supervisão e Fiscalização de Obras Escolares', 1, 'Educação', 'concluido', 1),
+('Gerenciamento, Supervisão e Fiscalização do Desenvolvimento de Projetos de Engenharia e Arquitetura', 1, 'Educação', 'concluido', 1),
+('Serviços Técnicos Especializados de Diagnóstico do Estado de Conservação dos Imóveis', 1, 'Educação', 'concluido', 1),
+
+('Gerenciamento, Supervisão e Fiscalização de Obras de Saneamento Básico', 2, 'Saneamento', 'concluido', 1),
+('Estudo de Concepção, Elaboração de Projetos Básicos e Executivos', 2, 'Saneamento', 'concluido', 1),
+('Serviços Técnicos (Revisão de Banco de Preços e Composições Unitárias)', 2, 'Saneamento', 'concluido', 1),
+('Serviços de Inspeção por Televisionamento de Tubulações de Esgoto', 2, 'Saneamento', 'concluido', 1),
+('Serviços Especializados de Auditoria da Gestão Ambiental', 2, 'Meio Ambiente', 'concluido', 1),
+
+('Gerenciamento, Supervisão e Fiscalização de Obras Habitacionais', 3, 'Habitação', 'concluido', 1),
+
+('Supervisão, Monitoramento e Acompanhamento Ambiental de Rodovias', 4, 'Rodovias/Ambiental', 'concluido', 1),
+('Coordenação das Ações Ambientais de Rodovias', 4, 'Rodovias/Ambiental', 'concluido', 1),
+
+('Supervisão Técnica e Ambiental das Obras Rodoviárias', 5, 'Rodovias', 'concluido', 1),
+
+('Gerenciamento Ambiental das Obras', 6, 'Ambiental', 'concluido', 1),
+
+('Acompanhamento de Obras e Fiscalização de Projetos de Rodovias', 7, 'Rodovias', 'concluido', 1),
+('Acompanhamento de Serviços de Conservação de Rodovias', 7, 'Rodovias', 'concluido', 1),
+
+('Planos Integrados Municipais e Regionais de Saneamento Básico para 23 Municípios', 9, 'Saneamento', 'concluido', 1),
+
+('Estudos, Projeto Básico e Projeto Executivo do Túnel Ayrton Senna', 10, 'Infraestrutura Urbana', 'concluido', 1),
+
+('Gerenciamento de Projetos de Arquitetura e de Engenharia de diversos CEUS', 11, 'Educação/Urbano', 'concluido', 1),
+
+('Gerenciamento e Fiscalização de Projetos e Obras de Infraestrutura Pública e Residencial', 13, 'Habitação', 'concluido', 1),
+
+('Implementação de Projetos Demonstrativos: Gestão Integrada de Perdas de Água e Energia', 14, 'Saneamento', 'concluido', 1),
+
+('Serviços de Engenharia como Agente Verificador do Programa Reagua', 15, 'Recursos Hídricos', 'concluido', 1),
+
+('Modelagem para Implementação do Novo Colégio Militar de Manaus (PPP)', 16, 'Engenharia/Gestão', 'concluido', 1),
+
+('Elaboração de Projetos e Gerenciamento de Empreendimentos Habitacionais', 17, 'Habitação', 'concluido', 1),
+
+('Gerenciamento, Supervisão e Fiscalização das Obras de Duplicação da Avenida', 18, 'Mobilidade Urbana', 'concluido', 1),
+('Gerenciamento, Supervisão e Fiscalização das Obras de Contenção de Encostas', 18, 'Infraestrutura Urbana', 'concluido', 1),
+
+('Manutenção, Reestruturação e Complementação do Banco de Dados de Custos Unitários', 19, 'Saneamento', 'concluido', 1);
+
+-- =========================================================
+-- MUDANÇAS FUTURAS (ALTER TABLE)
+-- Reserve esta seção para futuras migrações de esquema.
+-- =========================================================
+-- Exemplo:
+-- ALTER TABLE projetos ADD COLUMN destaque BOOLEAN DEFAULT FALSE;
+
+-- 3. Inserção do Catálogo de Tecnologias / Ferramentas
+INSERT INTO tecnologias (id, nome, icone_url) VALUES 
+(1, 'React.js', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg'),
+(2, 'Node.js', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg'),
+(3, 'MySQL & MariaDB', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mysql/mysql-original.svg'),
+(4, 'React Native & Expo', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg'),
+(5, 'PHP', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/php/php-original.svg'),
+(6, 'TypeScript', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg'),
+(7, 'Docker', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg'),
+(8, 'Python (Data Science)', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg'),
+(9, 'AutoCAD', 'https://api.iconify.design/logos:autocad.svg'),
+(10, 'Revit (Modelagem Paramétrica)', 'https://api.iconify.design/simple-icons:autodesk.svg?color=%23FF0000'),
+(11, 'Civil 3D (Infraestrutura)', 'https://api.iconify.design/simple-icons:autodesk.svg?color=%230088FF'),
+(12, 'SAP2000 (Análise Estrutural)', 'https://api.iconify.design/mdi:math-compass.svg?color=%23888888'),
+(13, 'BIM (Building Information Modeling)', 'https://api.iconify.design/fluent:building-home-24-regular.svg?color=%230088ff'),
+(14, 'Figma (UX/UI Design)', 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/figma/figma-original.svg'),
+(15, 'GIS (Geographic Information System)', 'https://api.iconify.design/gis:map-o.svg?color=%232ca02c'),
+(16, 'QGIS', 'https://api.iconify.design/simple-icons:qgis.svg?color=%23589632'),
+(17, 'Epanet (Modelagem Hidráulica)', 'https://api.iconify.design/fluent:drop-24-filled.svg?color=%2300aaff'),
+(18, 'WaterGEMS', 'https://api.iconify.design/fluent:water-24-filled.svg?color=%231d6f86'),
+(19, 'Digital Twins (Gêmeos Digitais)', 'https://api.iconify.design/fluent:phone-laptop-24-regular.svg?color=%230088ff'),
+(20, 'Laser Scanning & Drones', 'https://api.iconify.design/carbon:drone.svg?color=%23444444'),
+(21, 'Excel Avançado / VBA', 'https://api.iconify.design/simple-icons:microsoftexcel.svg?color=%23107c41'),
+(22, 'Metodologia Ágil (Scrum/Kanban)', 'https://api.iconify.design/fluent:board-24-regular.svg?color=%23ffaa00'),
+(23, 'PMI / PMBOK Gestão de Projetos', 'https://api.iconify.design/academicons:obp.svg?color=%2312141c'),
+(24, 'Compliance Regulatório', 'https://api.iconify.design/fluent:shield-task-24-regular.svg?color=%23107c41'),
+(25, 'Planejamento Urbano & Ambiental', 'https://api.iconify.design/fluent:leaf-three-24-regular.svg?color=%232ca02c')
+ON DUPLICATE KEY UPDATE icone_url=VALUES(icone_url);

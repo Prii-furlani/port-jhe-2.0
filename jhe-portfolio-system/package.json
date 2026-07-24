@@ -1,0 +1,8 @@
+{
+  "name": "jhe-portfolio-system",
+  "version": "1.0.0",
+  "scripts": {},
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
