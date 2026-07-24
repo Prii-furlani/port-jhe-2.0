@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Globe } from 'lucide-react';
+import { Globe, Phone } from 'lucide-react';
 
 const LinkedinIcon = ({ size = 18 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -13,6 +13,7 @@ export const Footer = () => {
   const [settings, setSettings] = useState({
     linkedin: 'https://www.linkedin.com/company/jhe-engenharia',
     website: 'https://www.jhe.com.br/',
+    phone: '',
     logo: '/logo.png'
   });
 
@@ -25,6 +26,7 @@ export const Footer = () => {
           setSettings({
             linkedin: data.data.footer_linkedin || 'https://www.linkedin.com/company/jhe-engenharia',
             website: data.data.footer_website || 'https://www.jhe.com.br/',
+            phone: data.data.footer_phone || '',
             logo: data.data.logo_footer ? `http://localhost:5000${data.data.logo_footer}` : '/logo.png'
           });
         }
@@ -64,6 +66,15 @@ export const Footer = () => {
             >
               <Globe size={18} />
             </a>
+            {settings.phone && (
+              <a
+                href={`tel:${settings.phone.replace(/\D/g, '')}`}
+                className="footer-social-link"
+                aria-label="Telefone"
+              >
+                <Phone size={18} />
+              </a>
+            )}
           </div>
         </div>
       </div>

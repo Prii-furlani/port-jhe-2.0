@@ -75,15 +75,36 @@ exports.getDashboardSummary = async (req, res) => {
 
         const avg_views_per_project = ranking.length > 0 ? Math.round(total_views / ranking.length) : 0;
 
-        // 4. Gráfico Histórico (Simulando últimos 7 dias)
+        // 4. Gráfico Histórico
+        const rangeStr = req.query.range || '30';
+        let range = parseInt(rangeStr);
+        if (isNaN(range) || ![7, 30, 90, 365].includes(range)) {
+            range = 30;
+        }
+
         const views_history = [];
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            views_history.push({
-                date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
-                views: Math.floor(Math.random() * 50) + 10 // Acessos diários aleatórios entre 10 e 60
-            });
+        
+        if (range === 365) {
+            // Agrupar por mês para 1 ano
+            for (let i = 11; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                views_history.push({
+                    date: date.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }),
+                    views: Math.floor(Math.random() * 500) + 100
+                });
+            }
+        } else {
+            // Diário para 7, 30, 90
+            let step = range === 90 ? 3 : 1; // Para 90 dias, pular a cada 3 dias para não poluir tanto, ou apenas diário
+            for (let i = range - 1; i >= 0; i -= step) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                views_history.push({
+                    date: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+                    views: Math.floor(Math.random() * 50) + 10
+                });
+            }
         }
 
         res.json({

@@ -35,10 +35,10 @@ const Home = () => {
     <>
       <Navbar />
       
-      {/* Hero Section - Full Bleed fora do container */}
+      {/* Hero Section - Proporcional e sem margem inferior */}
       <section 
         id="sobre" 
-        className="hero-section" 
+        className="hero-section min-h-[50vh] py-12 md:py-16 pb-0 mb-0 flex items-center justify-center" 
         style={heroData.image ? {
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.85)), url(${heroData.image})`,
           backgroundSize: 'cover',
@@ -53,10 +53,10 @@ const Home = () => {
       </section>
 
       {/* Conteúdo Abaixo do Hero */}
-      <main className="home-container" style={{ paddingBottom: '4rem' }}>
+      <main className="home-container space-y-0 gap-0" style={{ paddingBottom: '4rem' }}>
         
         {/* Pilares Institucionais */}
-        <section id="pilares" style={{ padding: '4rem 0' }}>
+        <section id="pilares" className="mt-0 pt-0">
           <PillarsGrid />
         </section>
 

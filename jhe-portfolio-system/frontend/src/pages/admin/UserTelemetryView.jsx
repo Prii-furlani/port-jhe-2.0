@@ -78,6 +78,22 @@ const UserTelemetryView = () => {
         <p className="text-slate-500 dark:text-slate-400 font-medium">Acompanhe a visibilidade, acessos e engajamento das suas soluções publicadas.</p>
       </div>
 
+      {/* BANNER DE PROPÓSITO SUPERIOR */}
+      <div className="mb-8 bg-gradient-to-r from-[#194775] to-[#38bdf8] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute right-0 top-0 h-full w-1/3 bg-white/5 skew-x-12 transform origin-top"></div>
+        <div className="relative z-10 max-w-3xl">
+          <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-black uppercase tracking-widest mb-4">
+            SEU IMPACTO GLOBAL
+          </span>
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-3">
+            O seu trabalho inspira transformação.
+          </h2>
+          <p className="text-sky-100 text-sm md:text-base leading-relaxed">
+            Cada visualização registrada aqui representa uma pessoa, empresa ou comunidade conhecendo o legado que você ajudou a construir através da JHE Engenharia.
+          </p>
+        </div>
+      </div>
+
       {data && (
         <div className="space-y-8">
           
@@ -115,6 +131,14 @@ const UserTelemetryView = () => {
                 </div>
               ) : (
                 <h2 className="text-xl font-bold text-slate-400 relative z-10 mt-3">Nenhum destaque</h2>
+              )}
+              {data.telemetry_kpis.top_project && data.telemetry_kpis.top_project.views > 100 && (
+                <div className="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 rounded-xl p-3 flex items-center gap-2 relative z-10">
+                  <span className="text-lg">🏆</span>
+                  <p className="text-xs font-bold text-yellow-800 dark:text-yellow-500">
+                    Projeto Destaque: Mais de 100 visualizações na vitrine!
+                  </p>
+                </div>
               )}
             </div>
           </div>

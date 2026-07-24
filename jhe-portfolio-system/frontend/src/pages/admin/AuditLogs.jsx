@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ShieldAlert, Activity, Search, Server, User, Calendar, Fingerprint } from 'lucide-react';
+import { ShieldAlert, Activity, Search, Server, User, Calendar, Fingerprint, Download, X } from 'lucide-react';
 
 
 const AuditLogs = () => {
@@ -13,6 +13,11 @@ const AuditLogs = () => {
   const [page, setPage] = useState(1);
   const limit = 50;
   const [total, setTotal] = useState(0);
+
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState('all');
+  const [exportValue, setExportValue] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     fetchLogs();
@@ -44,6 +49,34 @@ const AuditLogs = () => {
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     setPage(1); // Reset page on search
+  };
+
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      const url = `http://localhost:5000/api/admin/audit-logs/export/pdf?filterType=${exportType}&filterValue=${encodeURIComponent(exportValue)}`;
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Falha ao exportar PDF');
+      
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = `auditoria_logs_${exportType}_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setShowExportModal(false);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('Erro ao exportar PDF');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (user?.role !== 'admin_master') {
@@ -96,15 +129,24 @@ const AuditLogs = () => {
           <h2 className="admin-panel-title">
             <Activity size={20} color="var(--primary-color)" /> Registro de Atividades
           </h2>
-          <div className="search-bar" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', width: '300px' }}>
-            <Search size={18} color="var(--text-muted)" style={{ marginRight: '0.5rem' }} />
-            <input 
-              type="text" 
-              placeholder="Buscar ação, tabela ou usuário..." 
-              value={searchTerm}
-              onChange={handleSearch}
-              style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', outline: 'none', width: '100%', fontSize: '0.9rem' }}
-            />
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div className="search-bar" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-secondary)', padding: '0.5rem 1rem', borderRadius: '8px', border: '1px solid var(--border-color)', width: '300px' }}>
+              <Search size={18} color="var(--text-muted)" style={{ marginRight: '0.5rem' }} />
+              <input 
+                type="text" 
+                placeholder="Buscar ação, tabela ou usuário..." 
+                value={searchTerm}
+                onChange={handleSearch}
+                style={{ border: 'none', background: 'transparent', color: 'var(--text-primary)', outline: 'none', width: '100%', fontSize: '0.9rem' }}
+              />
+            </div>
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="btn btn-primary"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.6rem 1rem' }}
+            >
+              <Download size={16} /> Exportar PDF
+            </button>
           </div>
         </div>
 
@@ -175,6 +217,77 @@ const AuditLogs = () => {
           </>
         )}
       </div>
+
+      {/* Modal de Exportação */}
+      {showExportModal && (
+        <div className="modal-overlay" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="modal-content" style={{ background: 'var(--bg-primary)', padding: '2rem', borderRadius: '12px', width: '400px', boxShadow: '0 10px 25px rgba(0,0,0,0.2)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>Exportar Relatório PDF</h3>
+              <button onClick={() => setShowExportModal(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Tipo de Extração</label>
+                <select 
+                  value={exportType}
+                  onChange={(e) => { setExportType(e.target.value); setExportValue(''); }}
+                  style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                >
+                  <option value="all">Completo (Últimos 500 logs)</option>
+                  <option value="user">Por Usuário</option>
+                  <option value="date">Por Data Específica</option>
+                </select>
+              </div>
+
+              {exportType === 'user' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Nome do Usuário</label>
+                  <input 
+                    type="text" 
+                    placeholder="Ex: Leandro, Priscila..."
+                    value={exportValue}
+                    onChange={(e) => setExportValue(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+              )}
+
+              {exportType === 'date' && (
+                <div>
+                  <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-primary)', fontWeight: 'bold' }}>Data Específica</label>
+                  <input 
+                    type="date" 
+                    value={exportValue}
+                    onChange={(e) => setExportValue(e.target.value)}
+                    style={{ width: '100%', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+              <button 
+                onClick={() => setShowExportModal(false)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button 
+                onClick={handleExportPDF}
+                className="btn btn-primary"
+                disabled={exporting || (exportType !== 'all' && !exportValue)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              >
+                {exporting ? 'Gerando...' : 'Fazer Download'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

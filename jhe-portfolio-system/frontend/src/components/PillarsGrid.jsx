@@ -50,7 +50,7 @@ const PillarsGrid = () => {
   if (pillars.length === 0) return null;
 
   return (
-    <section className="py-20 px-4 w-full bg-slate-50/50 dark:bg-[#020817] transition-colors">
+    <section className="mt-0 pt-6 md:pt-8 pb-20 px-4 w-full bg-slate-50/50 dark:bg-[#020817] transition-colors">
       <div className="max-w-6xl mx-auto">
         
         {/* CABEÇALHO INSTITUCIONAL */}

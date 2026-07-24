@@ -73,25 +73,36 @@ exports.exportPdfSummary = async (req, res) => {
     const dateStr = new Date().toLocaleDateString('pt-BR');
     const author = req.user ? req.user.nome : 'Administrador';
 
-    // HEADER
+    // HEADER COM DEGRADÊ
+    const headerHeight = 150;
+    const grad = doc.linearGradient(0, 0, doc.page.width, 0);
+    grad.stop(0, '#194775').stop(1, '#38bdf8');
+    
+    // Desenha o retângulo de fundo ocupando toda a largura
+    doc.rect(0, 0, doc.page.width, headerHeight).fill(grad);
+
+    // Posiciona o Y inicial para os textos (margem superior do header)
+    doc.y = 40;
+
     doc.fontSize(24)
        .font('Helvetica-Bold')
-       .fillColor('#194775')
+       .fillColor('#ffffff')
        .text('JHE Engenharia', { align: 'center' });
        
     doc.moveDown(0.5);
     doc.fontSize(16)
        .font('Helvetica')
-       .fillColor('#333333')
+       .fillColor('#e0f2fe') // Azul claro
        .text('Relatório Executivo de Telemetria e Analytics', { align: 'center' });
 
-    doc.moveDown(1);
+    doc.moveDown(1.5);
     doc.fontSize(10)
-       .fillColor('#666666')
+       .fillColor('#ffffff')
        .text(`Data de Emissão: ${dateStr}`, { align: 'right' })
        .text(`Período Analisado: ${period}`, { align: 'right' });
     
-    doc.moveDown(2);
+    // Reposiciona o ponteiro (Y) para começar o conteúdo abaixo do cabeçalho
+    doc.y = headerHeight + 40;
 
     // KPIs
     doc.fontSize(14).fillColor('#194775').font('Helvetica-Bold').text('Métricas Principais');

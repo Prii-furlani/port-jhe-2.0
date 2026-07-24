@@ -85,13 +85,7 @@ const Sidebar = ({ onOpenPasswordModal }) => {
             <span>Projetos</span>
           </Link>
 
-          {/* EXIBIR 'MEU DESEMPENHO' APENAS PARA USUÁRIOS COMUNS */}
-          {!isMasterAdmin && (
-            <Link to="/admin/my-telemetry" className={`sidebar-link ${isActive('/admin/my-telemetry')}`}>
-              <BarChart2 size={18} />
-              <span>Meu Desempenho</span>
-            </Link>
-          )}
+
 
           {/* ITENS EXCLUSIVOS PARA ADMIN MASTER */}
           {isMasterAdmin && (

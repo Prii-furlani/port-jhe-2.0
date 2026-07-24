@@ -28,6 +28,7 @@ router.get('/admin/dashboard/summary', verifyToken, requireMasterAdmin, adminCon
 router.get('/admin/telemetry/summary', verifyToken, requireMasterAdmin, telemetryController.getTelemetrySummary);
 router.get('/admin/telemetry/export/pdf', verifyToken, requireMasterAdmin, telemetryController.exportPdfSummary);
 router.get('/admin/audit-logs', verifyToken, requireMasterAdmin, auditController.getAuditLogs);
+router.get('/admin/audit-logs/export/pdf', verifyToken, requireMasterAdmin, auditController.exportPdf);
 
 // Rotas da Fila de Moderação (Somente Admin Master)
 router.get('/admin/projects/pending', verifyToken, requireMasterAdmin, reviewController.getPendingProjects);
