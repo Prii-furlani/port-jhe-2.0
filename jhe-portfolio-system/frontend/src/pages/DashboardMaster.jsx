@@ -156,7 +156,7 @@ const DashboardMaster = () => {
                         <button 
                           className="btn btn-secondary" 
                           style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}
-                          onClick={() => navigate('/admin/projetos/revisoes')}
+                          onClick={() => navigate('/admin/projects?tab=pending')}
                         >
                           Ir para Fila
                         </button>

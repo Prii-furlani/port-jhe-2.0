@@ -13,7 +13,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
     senha VARCHAR(255) NOT NULL,
     role ENUM('admin_master', 'user') NOT NULL DEFAULT 'user',
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
-    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    password_changed_at TIMESTAMP NULL,
+    failed_login_attempts INT DEFAULT 0
 );
 
 -- 2. Tabela: clientes
@@ -113,10 +115,12 @@ CREATE TABLE IF NOT EXISTS auditoria_logs (
 -- =========================================================
 
 -- Inserção de usuários iniciais com senhas reais hasheadas via bcrypt
-INSERT INTO usuarios (nome, email, senha, role, ativo) VALUES 
-('Leandro Neves', 'leandro.neves@jhe.com.br', '$2a$10$mRRItVM0YniJ6.2hDYfuqO8vu3aM8nuYZKdfhB57afsExV.KJ/ukW', 'admin_master', 1),
-('Priscila Manzoni Furlani', 'priscila.furlani@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1),
-('Isabelly Almeida', 'isabelly.almeida@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1);
+INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `role`, `ativo`, `criado_em`, `password_changed_at`, `failed_login_attempts`) VALUES
+(1, 'Leandro Neves', 'leandro.neves@jhe.com.br', '$2a$10$24bUtIA0K8jybk6W332m3.ANdzWmXnUeiL7OMZv3Y47QM.as4F5Nm', 'admin_master', 1, '2026-07-22 12:12:07', '2026-07-22 12:31:10', 0),
+(2, 'Priscila Manzoni Furlani', 'priscila.furlani@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1, '2026-07-22 12:12:07', NULL, 0),
+(3, 'Isabelly Almeida', 'isabelly.almeida@jhe.com.br', '$2a$10$p0qHAE9JD1HqquRW.SdVEOYXQ9LFM71WqlN27s2.XxbVZLVx9up72', 'user', 1, '2026-07-22 12:12:07', '2026-07-24 13:28:22', 0),
+(4, 'Jonathan Coelho', 'jonathan.coelho@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1, '2026-07-22 12:12:07', NULL, 0),
+(5, 'Andrea Miranda', 'andrea.miranda@jhe.com.br', '$2a$10$hO6hfwRKsKaWizXwEz4SJupyJ8u9h4DEkYcWkO9aoVR5mO/9FBRbe', 'user', 1, '2026-07-22 12:12:07', NULL, 0);
 
 -- Inserção de configurações da Home
 INSERT INTO config_home (chave, valor) VALUES 

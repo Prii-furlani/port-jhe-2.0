@@ -69,9 +69,9 @@ exports.login = async (req, res) => {
 
         // Gera JWT
         const token = jwt.sign(
-            { id: user.id, nome: user.nome, email: user.email, role: user.role },
+            { id: user.id, nome: user.nome, email: user.email, role: user.role, theme: user.theme || 'light' },
             process.env.JWT_SECRET || 'your_super_secret_key_here',
-            { expiresIn: '8h' }
+            { expiresIn: '1h' }
         );
 
         await registrarAuditoria(user.id, 'LOGIN_SUCESSO', 'usuarios', req);
@@ -83,7 +83,8 @@ exports.login = async (req, res) => {
                 id: user.id,
                 nome: user.nome,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                theme: user.theme || 'light'
             }
         });
     } catch (error) {
@@ -132,6 +133,23 @@ exports.changePassword = async (req, res) => {
     } catch (error) {
         console.error('Erro na troca de senha:', error);
         res.status(500).json({ success: false, error: 'Erro interno do servidor ao trocar senha.' });
+    }
+};
+
+exports.updateTheme = async (req, res) => {
+    const userId = req.user.id;
+    const { theme } = req.body;
+    
+    if (!['light', 'dark', 'system'].includes(theme)) {
+        return res.status(400).json({ success: false, error: 'Tema inválido.' });
+    }
+
+    try {
+        await pool.query('UPDATE usuarios SET theme = ? WHERE id = ?', [theme, userId]);
+        res.json({ success: true, message: 'Tema atualizado com sucesso.' });
+    } catch (error) {
+        console.error('Erro ao atualizar tema:', error);
+        res.status(500).json({ success: false, error: 'Erro interno do servidor.' });
     }
 };
 

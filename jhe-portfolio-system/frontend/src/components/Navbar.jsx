@@ -52,10 +52,10 @@ export const Navbar = () => {
       </div>
 
       <div className="navbar-links flex items-center gap-8">
-        <a href="#sobre" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-[#194775] dark:hover:text-[#38bdf8] transition-colors">Sobre</a>
-        <a href="#servicos" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-[#194775] dark:hover:text-[#38bdf8] transition-colors">Serviços</a>
-        <a href="#trajetoria" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-[#194775] dark:hover:text-[#38bdf8] transition-colors">Trajetória</a>
-        <a href="#portfolio" className="text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-[#194775] dark:hover:text-[#38bdf8] transition-colors">Portfólio</a>
+        <a href="#sobre" className="text-sm text-slate-400 hover:text-[#194775] dark:hover:text-white px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all duration-200">Sobre</a>
+        <a href="#servicos" className="text-sm text-slate-400 hover:text-[#194775] dark:hover:text-white px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all duration-200">Serviços</a>
+        <a href="#trajetoria" className="text-sm text-slate-400 hover:text-[#194775] dark:hover:text-white px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all duration-200">Trajetória</a>
+        <a href="#portfolio" className="text-sm text-slate-400 hover:text-[#194775] dark:hover:text-white px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all duration-200">Portfólio</a>
         
         <button className="text-slate-500 hover:text-[#194775] dark:text-slate-400 dark:hover:text-white transition-colors" onClick={toggleTheme} aria-label="Toggle Theme">
           {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}

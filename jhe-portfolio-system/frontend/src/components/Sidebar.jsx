@@ -12,17 +12,16 @@ import {
   Moon,
   Sun,
   LogOut,
-  BarChart2,
-  ClipboardCheck,
+  ListTodo,
+  LineChart,
   Users
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const Sidebar = ({ onOpenPasswordModal }) => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, token, logout, updateGlobalTheme } = useAuth();
 
-  // Theme logic isolated for now (or move to context later)
   const [theme, setTheme] = React.useState('light');
   const [logos, setLogos] = React.useState({ light: null, dark: null });
 
@@ -45,108 +44,153 @@ const Sidebar = ({ onOpenPasswordModal }) => {
   }, []);
 
   React.useEffect(() => {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const storedTheme = localStorage.getItem('theme');
+    const currentTheme = storedTheme || document.documentElement.getAttribute('data-theme') || 'light';
     setTheme(currentTheme);
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = async () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
+    updateGlobalTheme(newTheme);
+
+    if (user && token) {
+      try {
+        await fetch('http://localhost:5000/api/auth/theme', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ theme: newTheme })
+        });
+      } catch (e) {
+        console.error('Failed to save theme preference', e);
+      }
+    }
   };
 
-  // RBAC: Verifica se o usuário é Master Admin usando a role do DB
   const isMasterAdmin = user?.role === 'admin_master';
+  const isActive = (path) => location.pathname.startsWith(path);
 
-  const isActive = (path) => location.pathname === path ? 'active' : '';
+  const navLinkClass = (path, exact = false) => {
+    const active = exact ? location.pathname === path : isActive(path);
+    return `flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ${
+      active 
+      ? 'text-[#A07146] font-semibold border-l-2 border-[#A07146] bg-slate-50 dark:bg-slate-800/30' 
+      : 'text-slate-400 hover:text-[#194775] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-xl'
+    }`;
+  };
 
   return (
-    <aside className="sidebar-wrapper">
-      <div>
+    <aside className="w-[250px] h-screen sticky top-0 border-r border-slate-200 dark:border-white/5 flex flex-col justify-between transition-colors z-30" style={{ backgroundColor: 'var(--bg-sidebar)', color: 'var(--text-primary)' }}>
+      <div className="flex-1 overflow-y-auto hide-scrollbar px-4 pt-6 pb-4 flex flex-col gap-6">
         {/* BRAND LOGO */}
-        <div className="sidebar-header">
-          <Link to="/" style={{ textDecoration: 'none' }}>
+        <div className="px-2 mb-2">
+          <Link to="/" className="block">
             {(theme === 'dark' && logos.dark) || (theme === 'light' && logos.light) ? (
-              <img src={theme === 'dark' ? (logos.dark || logos.light) : (logos.light || logos.dark)} alt="JHE Consultores" style={{ height: '40px', objectFit: 'contain' }} />
+              <img src={theme === 'dark' ? (logos.dark || logos.light) : (logos.light || logos.dark)} alt="JHE Consultores" className="h-10 object-contain" />
             ) : (
-              <h1 className="sidebar-logo-text">JHE</h1>
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">JHE<span className="text-[#A07146]">.</span></h1>
             )}
           </Link>
         </div>
 
         {/* NAVEGAÇÃO PRINCIPAL */}
-        <nav className="sidebar-nav">
-          <Link to={isMasterAdmin ? "/admin/dashboard" : "/user/dashboard"} className={`sidebar-link ${isActive(isMasterAdmin ? '/admin/dashboard' : '/user/dashboard')}`}>
-            <LayoutDashboard size={18} />
+        <nav className="flex flex-col gap-1.5">
+          <Link to={isMasterAdmin ? "/admin/dashboard" : "/user/dashboard"} className={navLinkClass(isMasterAdmin ? '/admin/dashboard' : '/user/dashboard', true)}>
+            <LayoutDashboard size={20} />
             <span>Dashboard</span>
           </Link>
 
-          <Link to="/admin/projects" className={`sidebar-link ${isActive('/admin/projects')}`}>
-            <FolderKanban size={18} />
+          <Link to="/admin/projects" className={navLinkClass('/admin/projects', true)}>
+            <FolderKanban size={20} />
             <span>Projetos</span>
           </Link>
 
-
+          {/* ITENS EXCLUSIVOS PARA USUÁRIO (NÃO-ADMIN) */}
+          {!isMasterAdmin && (
+            <Link to="/admin/my-telemetry" className={navLinkClass('/admin/my-telemetry')}>
+              <LineChart size={20} />
+              <span>Minha Telemetria</span>
+            </Link>
+          )}
 
           {/* ITENS EXCLUSIVOS PARA ADMIN MASTER */}
           {isMasterAdmin && (
-            <>
-              <div className="sidebar-divider" />
-
-              <Link to="/admin/telemetry" className={`sidebar-link ${isActive('/admin/telemetry')}`}>
-                <Activity size={18} />
+            <div className="mt-6 flex flex-col gap-1.5">
+              <span className="px-4 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1 mt-2">Administração</span>
+              
+              <Link to="/admin/telemetry" className={navLinkClass('/admin/telemetry')}>
+                <Activity size={20} />
                 <span>Telemetria Executiva</span>
               </Link>
 
-              <Link to="/admin/users" className={`sidebar-link ${isActive('/admin/users')}`}>
-                <Users size={18} />
+              <Link to="/admin/users" className={navLinkClass('/admin/users')}>
+                <Users size={20} />
                 <span>Gestão de Usuários</span>
               </Link>
 
-              <Link to="/admin/audit-logs" className={`sidebar-link ${isActive('/admin/audit-logs')}`}>
-                <ShieldAlert size={18} />
+              <Link to="/admin/audit-logs" className={navLinkClass('/admin/audit-logs')}>
+                <ShieldAlert size={20} />
                 <span>Logs de Auditoria</span>
               </Link>
 
-              <Link to="/admin/home-settings" className={`sidebar-link ${isActive('/admin/home-settings')}`}>
-                <Settings size={18} />
+              <Link to="/admin/home-settings" className={navLinkClass('/admin/home-settings')}>
+                <Settings size={20} />
                 <span>Configurações Home</span>
               </Link>
-            </>
+            </div>
           )}
         </nav>
       </div>
 
       {/* RODAPÉ DO USUÁRIO & PERFIL */}
-      <div className="sidebar-footer">
+      <div className="p-4 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02]">
+        
         {/* NOME DO USUÁRIO LOGADO */}
-        <div className="sidebar-user-profile">
-          <User className="accordion-toggle-icon" size={18} />
-          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {user?.nome || 'Usuário Autenticado'}
-          </span>
+        <div className="flex items-center gap-3 px-3 py-3 mb-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm" style={{ backgroundColor: 'var(--bg-card)' }}>
+          <div className="w-9 h-9 rounded-full bg-[#194775]/10 dark:bg-[#38bdf8]/10 flex items-center justify-center text-[#194775] dark:text-[#38bdf8] shrink-0">
+            <User size={18} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-extrabold truncate" style={{ color: 'var(--text-primary)' }}>
+              {user?.nome || 'Usuário Autenticado'}
+            </p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">
+              {isMasterAdmin ? 'Admin Master' : 'Colaborador'}
+            </p>
+          </div>
         </div>
 
         {/* BOTÕES DE AÇÃO RÁPIDA */}
-        <button onClick={onOpenPasswordModal} className="sidebar-link">
-          <KeyRound size={16} />
-          <span>Alterar Senha</span>
-        </button>
+        <div className="flex flex-col gap-1">
+          <button onClick={onOpenPasswordModal} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors w-full">
+            <KeyRound size={16} />
+            <span>Alterar Senha</span>
+          </button>
 
-        <a href="/" rel="noopener noreferrer" className="sidebar-link">
-          <ExternalLink size={16} />
-          <span>Ver Site</span>
-        </a>
+          <a href="/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors w-full">
+            <ExternalLink size={16} />
+            <span>Ver Site</span>
+          </a>
 
-        <button onClick={toggleTheme} className="sidebar-link">
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-          <span>{theme === 'dark' ? 'Tema Claro' : 'Tema Escuro'}</span>
-        </button>
+          <button onClick={toggleTheme} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 transition-colors w-full">
+            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+            <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>
+          </button>
 
-        <button onClick={logout} className="sidebar-link danger" style={{ marginTop: '0.5rem' }}>
-          <LogOut size={16} />
-          <span>Sair</span>
-        </button>
+          <button onClick={logout} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 transition-colors mt-2 w-full">
+            <LogOut size={16} />
+            <span>Encerrar Sessão</span>
+          </button>
+        </div>
       </div>
     </aside>
   );

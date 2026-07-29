@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
 
 exports.getPortfolioClients = async (req, res) => {
     try {
@@ -113,6 +114,15 @@ exports.updateClient = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Cliente atualizado com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'ATUALIZAR_CLIENTE',
+            tabela_afetada: 'clientes',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Cliente '${nome}' (ID: ${id}) atualizado.`
+        });
     } catch (error) {
         console.error('Erro ao atualizar cliente:', error);
         res.status(500).json({ success: false, error: 'Erro interno ao atualizar cliente.' });
@@ -124,8 +134,13 @@ exports.deleteClient = async (req, res) => {
     try {
         const { id } = req.params;
 
+        // Captura prévia
+        const [cli] = await pool.query('SELECT nome FROM clientes WHERE id = ?', [id]);
+        if (cli.length === 0) return res.status(404).json({ success: false, error: 'Cliente não encontrado.' });
+        
+        const clienteNome = cli[0].nome;
+
         // Se houver projetos vinculados a este cliente, o MySQL pode dar erro de Foreign Key (Restrict).
-        // Capturar esse erro específico seria o ideal.
         const [result] = await pool.query('DELETE FROM clientes WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
@@ -133,6 +148,15 @@ exports.deleteClient = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Cliente removido com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'EXCLUIR_CLIENTE',
+            tabela_afetada: 'clientes',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Cliente '${clienteNome}' (ID: ${id}) foi excluído.`
+        });
     } catch (error) {
         console.error('Erro ao remover cliente:', error);
         if (error.code === 'ER_ROW_IS_REFERENCED_2' || error.code === 'ER_ROW_IS_REFERENCED') {

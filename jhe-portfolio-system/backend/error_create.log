@@ -1,0 +1,24 @@
+{
+  "body": {
+    "titulo": "teste projeto",
+    "cliente_id": "7",
+    "servico_id": "6",
+    "setor": "",
+    "ano_desenvolvimento": "2026",
+    "localizacao": "",
+    "link_oficial": "",
+    "resumo_curto": "teste 2",
+    "descricao_detalhada": "teste 3",
+    "desafios": "teste 4",
+    "metodologias": "teste 5",
+    "kpis_impacto": "teste 6",
+    "stakeholders": "[]",
+    "status_solicitado": [
+      "draft",
+      "draft"
+    ],
+    "tecnologias": "[]"
+  },
+  "error": "Column count doesn't match value count at row 1",
+  "stack": "Error: Column count doesn't match value count at row 1\n    at exports.createProject (C:\\Users\\Priscila.Furlani\\OneDrive - JHE CONSULTORES ASSOCIADOS\\Documentos\\port-jhe-2.0\\jhe-portfolio-system\\backend\\controllers\\projectController.js:167:43)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)"
+}

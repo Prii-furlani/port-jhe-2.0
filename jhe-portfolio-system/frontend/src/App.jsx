@@ -6,6 +6,7 @@ import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import ProjectDetail from './pages/ProjectDetail';
+import ProjectsList from './pages/ProjectsList';
 
 // Layout e Páginas Administrativas
 import AdminLayout from './components/AdminLayout';
@@ -27,6 +28,8 @@ function App() {
           {/* Rotas Públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/projects" element={<ProjectsList />} />
+          <Route path="/projetos" element={<Navigate to="/projects" replace />} />
           <Route path="/projetos/:id" element={<ProjectDetail />} />
 
           {/* Rotas Privadas (Envelopadas pelo AdminLayout) */}

@@ -7,11 +7,13 @@ import Footer from '../components/Footer';
 const ProjectDetail = () => {
   const { id } = useParams();
   const [project, setProject] = useState(null);
+  const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     fetchProject();
+    fetchUpdates();
   }, [id]);
 
   const fetchProject = async () => {
@@ -25,6 +27,18 @@ const ProjectDetail = () => {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUpdates = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/projects/${id}/updates`);
+      const data = await res.json();
+      if (data.success) {
+        setUpdates(data.data);
+      }
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -292,6 +306,63 @@ const ProjectDetail = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Bloco 4: Linha do Tempo / Evolução do Projeto */}
+            {updates && updates.filter(u => u.is_public).length > 0 && (
+              <div className="pt-8 mt-12 border-t border-slate-200 dark:border-white/10">
+                <div className="mb-10">
+                  <h3 className="text-sm font-bold text-accent-secondary uppercase tracking-[0.2em] mb-2">
+                    Evolução Contínua
+                  </h3>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-white">Linha do Tempo do Projeto</h2>
+                </div>
+                
+                <div className="relative border-l-2 border-accent-secondary/30 ml-4 md:ml-6 space-y-12 pb-8">
+                  {updates.filter(u => u.is_public).map((update) => {
+                    return (
+                      <div key={update.id} className="relative pl-8 md:pl-12 group">
+                        {/* Timeline Node */}
+                        <div className="absolute w-4 h-4 rounded-full bg-accent-secondary border-4 border-white dark:border-secondary-dark left-[-9px] top-1.5 shadow-[0_0_10px_rgba(160,113,70,0.5)] group-hover:scale-125 group-hover:bg-accent-primary transition-all duration-300 z-10" />
+                        
+                        <div className="bg-white dark:bg-secondary-dark/60 backdrop-blur-sm border border-slate-200 dark:border-white/10 rounded-2xl p-6 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                          <div className="flex flex-wrap items-center gap-3 mb-4">
+                            <span className="inline-flex items-center gap-1.5 bg-accent-secondary/10 text-accent-secondary px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider">
+                              <Calendar size={14} /> {update.month_year}
+                            </span>
+                            <h4 className="text-xl font-bold text-slate-800 dark:text-white">{update.title}</h4>
+                          </div>
+                          
+                          <p className="text-slate-600 dark:text-slate-300 text-sm md:text-base leading-relaxed mb-6 whitespace-pre-line">
+                            {update.description}
+                          </p>
+
+                          {update.photos && update.photos.length > 0 && (
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {update.photos.map(img => (
+                                <div 
+                                  key={img.id} 
+                                  className="relative aspect-video rounded-xl overflow-hidden cursor-pointer border border-slate-200 dark:border-white/10 group/img"
+                                  onClick={() => setLightboxImage(`http://localhost:5000${img.imagem_url}`)}
+                                >
+                                  <img 
+                                    src={`http://localhost:5000${img.imagem_url}`} 
+                                    alt="Atualização Galeria" 
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover/img:scale-110"
+                                  />
+                                  <div className="absolute inset-0 bg-black/0 group-hover/img:bg-black/20 transition-colors flex items-center justify-center">
+                                    <ExternalLink size={16} className="text-white opacity-0 group-hover/img:opacity-100 transition-opacity transform translate-y-2 group-hover/img:translate-y-0" />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

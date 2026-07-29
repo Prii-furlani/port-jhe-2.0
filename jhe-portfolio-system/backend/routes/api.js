@@ -18,6 +18,7 @@ const settingsController = require('../controllers/settingsController');
 const adminController = require('../controllers/adminController');
 const auditController = require('../controllers/auditController');
 const technologyController = require('../controllers/technologyController');
+const projectUpdateController = require('../controllers/projectUpdateController');
 const uploadClient = require('../config/uploadClient');
 const uploadProject = require('../config/uploadProject');
 const pillarController = require('../controllers/pillarController');
@@ -79,6 +80,7 @@ router.get('/health', (req, res) => res.json({ status: 'ok' }));
 // Rotas de Autenticação
 router.post('/auth/login', authController.login);
 router.put('/auth/change-password', verifyToken, authController.changePassword);
+router.patch('/auth/theme', verifyToken, authController.updateTheme);
 
 // Rota de Telemetria e Dashboard do Usuário Comum
 router.get('/user/telemetry', verifyToken, userTelemetryController.getUserTelemetry);
@@ -103,5 +105,10 @@ router.post('/projects', verifyToken, uploadProject.fields([{ name: 'cover_image
 router.put('/projects/:id', verifyToken, uploadProject.fields([{ name: 'cover_image', maxCount: 1 }, { name: 'gallery', maxCount: 10 }]), projectController.updateProject);
 router.delete('/projects/:id', verifyToken, projectController.deleteProject);
 router.patch('/projects/:id/status', verifyToken, requireMasterAdmin, projectController.updateProjectStatus);
+
+// Rotas de Atualizações de Projeto (Changelog / Timeline)
+router.get('/projects/:id/updates', optionalVerifyToken, projectUpdateController.getProjectUpdates);
+router.post('/projects/:id/updates', verifyToken, uploadProject.fields([{ name: 'gallery', maxCount: 10 }]), projectUpdateController.createProjectUpdate);
+router.delete('/projects/updates/:update_id', verifyToken, projectUpdateController.deleteProjectUpdate);
 
 module.exports = router;

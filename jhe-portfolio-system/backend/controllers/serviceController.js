@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
 
 // Listar todos os serviços
 exports.getAllServices = async (req, res) => {
@@ -51,6 +52,15 @@ exports.updateService = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Serviço atualizado com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'ATUALIZAR_SERVICO',
+            tabela_afetada: 'servicos',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Serviço '${nome}' (ID: ${id}) atualizado.`
+        });
     } catch (error) {
         console.error('Erro ao atualizar serviço:', error);
         res.status(500).json({ success: false, error: 'Erro interno ao atualizar serviço.' });
@@ -62,6 +72,11 @@ exports.deleteService = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const [srv] = await pool.query('SELECT nome FROM servicos WHERE id = ?', [id]);
+        if (srv.length === 0) return res.status(404).json({ success: false, error: 'Serviço não encontrado.' });
+        
+        const servicoNome = srv[0].nome;
+
         const [result] = await pool.query('DELETE FROM servicos WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
@@ -69,6 +84,15 @@ exports.deleteService = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Serviço removido com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'EXCLUIR_SERVICO',
+            tabela_afetada: 'servicos',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Serviço '${servicoNome}' (ID: ${id}) foi excluído.`
+        });
     } catch (error) {
         console.error('Erro ao remover serviço:', error);
         res.status(500).json({ success: false, error: 'Erro interno ao excluir serviço.' });

@@ -2,6 +2,7 @@ const pool = require('../config/db');
 const uploadClient = require('../config/uploadClient');
 const fs = require('fs');
 const path = require('path');
+const { logAudit } = require('../utils/auditLogger');
 
 // Utilitário para verificar role do usuário a partir do token
 // Como o req.user é setado pelo verifyToken middleware:
@@ -56,9 +57,22 @@ exports.getAllProjects = async (req, res) => {
             `, [p.id]);
             p.tecnologias = tecs;
             
-            const [galeria] = await pool.query(`SELECT id, imagem_url FROM projeto_imagens WHERE projeto_id = ?`, [p.id]);
-            p.galeria = galeria;
+            const [updates] = await pool.query(`
+                SELECT id, title, month_year, description, is_public, created_at, updated_at
+                FROM project_updates
+                WHERE project_id = ?
+                ORDER BY created_at DESC
+            `, [p.id]);
 
+            const [galeria] = await pool.query(`SELECT id, imagem_url, update_id FROM projeto_imagens WHERE projeto_id = ?`, [p.id]);
+            
+            p.updates = updates.map(u => ({
+                ...u,
+                is_public: u.is_public === 1,
+                photos: galeria.filter(g => g.update_id === u.id)
+            }));
+
+            p.galeria = galeria.filter(g => g.update_id === null);
             // Parse JSON stakeholders se existir
             if (p.stakeholders) {
                 try { p.stakeholders = JSON.parse(p.stakeholders); }
@@ -113,8 +127,22 @@ exports.getProjectById = async (req, res) => {
         `, [p.id]);
         p.tecnologias = tecs;
         
-        const [galeria] = await pool.query(`SELECT id, imagem_url FROM projeto_imagens WHERE projeto_id = ?`, [p.id]);
-        p.galeria = galeria;
+        const [updates] = await pool.query(`
+            SELECT id, title, month_year, description, is_public, created_at, updated_at
+            FROM project_updates
+            WHERE project_id = ?
+            ORDER BY created_at DESC
+        `, [p.id]);
+        
+        const [galeria] = await pool.query(`SELECT id, imagem_url, update_id FROM projeto_imagens WHERE projeto_id = ?`, [p.id]);
+        
+        p.updates = updates.map(u => ({
+            ...u,
+            is_public: u.is_public === 1,
+            photos: galeria.filter(g => g.update_id === u.id)
+        }));
+
+        p.galeria = galeria.filter(g => g.update_id === null);
 
         if (p.stakeholders) {
             try { p.stakeholders = JSON.parse(p.stakeholders); }
@@ -168,8 +196,22 @@ exports.createProject = async (req, res) => {
             (titulo, cliente_id, servico_id, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento, stakeholders, imagem_url, status, created_by, localizacao, kpis_impacto)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-            titulo, cliente_id, servico_id || null, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, 
-            ano_desenvolvimento || null, stakeholdersJson, imagem_url, finalStatus, userId, localizacao || null, kpis_impacto || null
+            titulo || null, 
+            cliente_id || null, 
+            servico_id || null, 
+            setor || null, 
+            resumo_curto || null, 
+            descricao_detalhada || null, 
+            desafios || null, 
+            metodologias || null, 
+            link_oficial || null, 
+            ano_desenvolvimento || null, 
+            stakeholdersJson || null, 
+            imagem_url || null, 
+            finalStatus || null, 
+            userId || null, 
+            localizacao || null, 
+            kpis_impacto || null
         ]);
         
         const projetoId = result.insertId;
@@ -192,6 +234,28 @@ exports.createProject = async (req, res) => {
                     `INSERT INTO projeto_imagens (projeto_id, imagem_url) VALUES (?, ?)`,
                     [projetoId, `/uploads/projects/${file.filename}`]
                 );
+            }
+        }
+
+        // Inserir Updates (Histórico)
+        const { updates } = req.body;
+        if (updates) {
+            let updatesArray = typeof updates === 'string' ? JSON.parse(updates) : updates;
+            for (let i = 0; i < updatesArray.length; i++) {
+                const u = updatesArray[i];
+                const [uRes] = await connection.query(
+                    `INSERT INTO project_updates (project_id, title, month_year, description, is_public) VALUES (?, ?, ?, ?, ?)`,
+                    [projetoId, u.title, u.month_year, u.description, u.is_public ? 1 : 0]
+                );
+                const updateId = uRes.insertId;
+
+                const updateGalleryFiles = req.files && req.files[`update_gallery_${i}`] ? req.files[`update_gallery_${i}`] : [];
+                for (const file of updateGalleryFiles) {
+                    await connection.query(
+                        `INSERT INTO projeto_imagens (projeto_id, update_id, imagem_url) VALUES (?, ?, ?)`,
+                        [projetoId, updateId, `/uploads/projects/${file.filename}`]
+                    );
+                }
             }
         }
 
@@ -253,7 +317,22 @@ exports.updateProject = async (req, res) => {
                 titulo=?, cliente_id=?, servico_id=?, setor=?, resumo_curto=?, descricao_detalhada=?, 
                 desafios=?, metodologias=?, link_oficial=?, ano_desenvolvimento=?, stakeholders=?, status=?, localizacao=?, kpis_impacto=?
         `;
-        let params = [titulo, cliente_id, servico_id || null, setor, resumo_curto, descricao_detalhada, desafios, metodologias, link_oficial, ano_desenvolvimento || null, stakeholdersJson, finalStatus, localizacao || null, kpis_impacto || null];
+        let params = [
+            titulo || null, 
+            cliente_id || null, 
+            servico_id || null, 
+            setor || null, 
+            resumo_curto || null, 
+            descricao_detalhada || null, 
+            desafios || null, 
+            metodologias || null, 
+            link_oficial || null, 
+            ano_desenvolvimento || null, 
+            stakeholdersJson || null, 
+            finalStatus || null, 
+            localizacao || null, 
+            kpis_impacto || null
+        ];
 
         if (req.files && req.files['cover_image']) {
             updateQuery += `, imagem_url=?`;
@@ -296,7 +375,56 @@ exports.updateProject = async (req, res) => {
             }
         }
 
+        // Processar Updates (Histórico)
+        const { updates, removed_updates } = req.body;
+        if (removed_updates) {
+            let removedUpdArray = typeof removed_updates === 'string' ? JSON.parse(removed_updates) : removed_updates;
+            for (const remId of removedUpdArray) {
+                await connection.query(`DELETE FROM project_updates WHERE id = ? AND project_id = ?`, [remId, id]);
+            }
+        }
+        
+        if (updates) {
+            let updatesArray = typeof updates === 'string' ? JSON.parse(updates) : updates;
+            for (let i = 0; i < updatesArray.length; i++) {
+                const u = updatesArray[i];
+                let updateId = u.id;
+                
+                if (updateId) {
+                    await connection.query(
+                        `UPDATE project_updates SET title=?, month_year=?, description=?, is_public=? WHERE id=? AND project_id=?`,
+                        [u.title, u.month_year, u.description, u.is_public ? 1 : 0, updateId, id]
+                    );
+                } else {
+                    const [uRes] = await connection.query(
+                        `INSERT INTO project_updates (project_id, title, month_year, description, is_public) VALUES (?, ?, ?, ?, ?)`,
+                        [id, u.title, u.month_year, u.description, u.is_public ? 1 : 0]
+                    );
+                    updateId = uRes.insertId;
+                }
+
+                // Inserir novas imagens deste update (se houver via upload)
+                const updateGalleryFiles = req.files && req.files[`update_gallery_${i}`] ? req.files[`update_gallery_${i}`] : [];
+                for (const file of updateGalleryFiles) {
+                    await connection.query(
+                        `INSERT INTO projeto_imagens (projeto_id, update_id, imagem_url) VALUES (?, ?, ?)`,
+                        [id, updateId, `/uploads/projects/${file.filename}`]
+                    );
+                }
+            }
+        }
+
         await connection.commit();
+        
+        await logAudit({
+            usuario_id: userId,
+            acao: 'ATUALIZAR_PROJETO',
+            tabela_afetada: 'projetos',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Projeto '${titulo}' (ID: ${id}) atualizado.`
+        });
+
         res.json({ success: true, message: 'Projeto atualizado com sucesso' });
     } catch (e) {
         await connection.rollback();
@@ -314,17 +442,38 @@ exports.deleteProject = async (req, res) => {
         const userId = req.user.id;
         const userRole = req.user.role;
 
-        const [proj] = await pool.query('SELECT created_by FROM projetos WHERE id = ?', [id]);
+        const [proj] = await pool.query('SELECT titulo, created_by FROM projetos WHERE id = ?', [id]);
         if (proj.length === 0) return res.status(404).json({ success: false, message: 'Projeto não encontrado' });
         
-        if (userRole !== 'admin_master' && proj[0].created_by !== userId) {
+        const projeto = proj[0];
+
+        if (userRole !== 'admin_master' && projeto.created_by !== userId) {
             return res.status(403).json({ success: false, message: 'Sem permissão para excluir este projeto' });
         }
 
         await pool.query('DELETE FROM projetos WHERE id = ?', [id]);
+        
+        await logAudit({
+            usuario_id: userId,
+            acao: 'EXCLUIR_PROJETO',
+            tabela_afetada: 'projetos',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Projeto '${projeto.titulo}' (ID: ${id}) foi excluído pelo usuário.`
+        });
+
         res.json({ success: true, message: 'Projeto excluído com sucesso' });
     } catch (e) {
         console.error('Erro deleteProject:', e);
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'EXCLUIR_PROJETO',
+            tabela_afetada: 'projetos',
+            registro_id: req.params.id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            status: 'FALHA',
+            detalhes: `Falha ao excluir projeto: ${e.message}`
+        });
         res.status(500).json({ success: false, message: 'Erro ao excluir projeto' });
     }
 };
@@ -344,5 +493,71 @@ exports.updateProjectStatus = async (req, res) => {
     } catch (e) {
         console.error('Erro updateProjectStatus:', e);
         res.status(500).json({ success: false, message: 'Erro ao atualizar status' });
+    }
+};
+
+exports.getProjectUpdates = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [updates] = await pool.query(
+            'SELECT * FROM projeto_atualizacoes WHERE projeto_id = ? ORDER BY data_atualizacao DESC, created_at DESC',
+            [id]
+        );
+        res.json({ success: true, data: updates });
+    } catch (e) {
+        console.error('Erro getProjectUpdates:', e);
+        res.status(500).json({ success: false, message: 'Erro ao buscar atualizações do projeto' });
+    }
+};
+
+exports.createProjectUpdate = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data_atualizacao, titulo, descricao } = req.body;
+        
+        // Verificação de permissão
+        const userId = req.user.id;
+        const userRole = req.user.role;
+        const [proj] = await pool.query('SELECT created_by FROM projetos WHERE id = ?', [id]);
+        
+        if (proj.length === 0) return res.status(404).json({ success: false, message: 'Projeto não encontrado' });
+        if (userRole !== 'admin_master' && proj[0].created_by !== userId) {
+            return res.status(403).json({ success: false, message: 'Sem permissão para adicionar atualização' });
+        }
+
+        await pool.query(
+            'INSERT INTO projeto_atualizacoes (projeto_id, data_atualizacao, titulo, descricao) VALUES (?, ?, ?, ?)',
+            [id, data_atualizacao, titulo, descricao]
+        );
+        
+        res.status(201).json({ success: true, message: 'Atualização criada com sucesso' });
+    } catch (e) {
+        console.error('Erro createProjectUpdate:', e);
+        res.status(500).json({ success: false, message: 'Erro ao criar atualização' });
+    }
+};
+
+exports.deleteProjectUpdate = async (req, res) => {
+    try {
+        const { update_id } = req.params;
+        
+        // Precisamos descobrir o projeto_id para checar permissões
+        const [update] = await pool.query('SELECT projeto_id FROM projeto_atualizacoes WHERE id = ?', [update_id]);
+        if (update.length === 0) return res.status(404).json({ success: false, message: 'Atualização não encontrada' });
+        
+        const projetoId = update[0].projeto_id;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        const [proj] = await pool.query('SELECT created_by FROM projetos WHERE id = ?', [projetoId]);
+        if (userRole !== 'admin_master' && proj[0].created_by !== userId) {
+            return res.status(403).json({ success: false, message: 'Sem permissão para excluir esta atualização' });
+        }
+
+        await pool.query('DELETE FROM projeto_atualizacoes WHERE id = ?', [update_id]);
+        res.json({ success: true, message: 'Atualização excluída com sucesso' });
+    } catch (e) {
+        console.error('Erro deleteProjectUpdate:', e);
+        res.status(500).json({ success: false, message: 'Erro ao excluir atualização' });
     }
 };

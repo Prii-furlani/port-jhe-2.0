@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
 
 exports.getHomeSettings = async (req, res) => {
     try {
@@ -57,6 +58,16 @@ exports.updateHomeSettings = async (req, res) => {
         await Promise.all(queries);
 
         res.json({ success: true, message: 'Configurações atualizadas com sucesso!', image_url: hero_image_url });
+
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'ATUALIZAR_CONFIG',
+            tabela_afetada: 'config_home',
+            registro_id: 'HOME',
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: 'Configurações gerais da Home foram atualizadas.'
+        });
+
 
     } catch (error) {
         console.error('Erro ao atualizar configurações da Home:', error);

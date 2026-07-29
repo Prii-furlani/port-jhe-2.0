@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, CheckCircle, XCircle, Search, Clock, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle, XCircle, Search, Clock, FileText, Eye } from 'lucide-react';
 import Swal from 'sweetalert2';
 import ProjectFormModal from './ProjectFormModal';
+import ProjectPreviewModal from './ProjectPreviewModal';
 import { useAuth } from '../context/AuthContext';
+import { useLocation } from 'react-router-dom';
 
 const ProjectManager = () => {
   const { token, user } = useAuth();
@@ -15,6 +17,10 @@ const ProjectManager = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
 
+  // Preview Modal state
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewProject, setPreviewProject] = useState(null);
+
   // Filtros de abas
   const [activeTab, setActiveTab] = useState('all'); 
   // admin: 'all', 'pending'
@@ -23,12 +29,22 @@ const ProjectManager = () => {
   // Settings state (Admin Master only)
   const [requireApproval, setRequireApproval] = useState(true);
 
+  const location = useLocation();
+
   useEffect(() => {
     fetchProjects();
     if (user?.role === 'admin_master') {
       fetchSettings();
     }
   }, [user]);
+
+  useEffect(() => {
+    // Ao carregar o componente, verifica se veio redirecionado com a flag 'tab=pending'
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get('tab') === 'pending' && user?.role === 'admin_master') {
+      setActiveTab('pending');
+    }
+  }, [location.search, user]);
 
   const fetchSettings = async () => {
     try {
@@ -140,6 +156,11 @@ const ProjectManager = () => {
   const openEditModal = (proj) => {
     setEditingProject(proj);
     setIsModalOpen(true);
+  };
+
+  const openPreviewModal = (proj) => {
+    setPreviewProject(proj);
+    setIsPreviewOpen(true);
   };
 
   const getFilteredProjects = () => {
@@ -298,22 +319,32 @@ const ProjectManager = () => {
                         {/* Ações de Aprovação do Admin */}
                         {user?.role === 'admin_master' && proj.status === 'pending' && (
                           <>
-                            <button onClick={() => handleStatusChange(proj.id, 'active')} className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg" title="Aprovar">
+                            <button onClick={() => openPreviewModal(proj)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg" title="Revisar e Aprovar">
+                              <Eye size={16} />
+                            </button>
+                            <button onClick={() => handleStatusChange(proj.id, 'active')} className="p-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg" title="Aprovar Diretamente">
                               <CheckCircle size={16} />
                             </button>
-                            <button onClick={() => handleStatusChange(proj.id, 'rejected')} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg" title="Rejeitar">
+                            <button onClick={() => handleStatusChange(proj.id, 'rejected')} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg" title="Rejeitar Diretamente">
                               <XCircle size={16} />
                             </button>
                           </>
+                        )}
+                        
+                        {/* Se não for pending, ou se for mas quiser só visualizar, mostra o olhinho sempre (opcional). Vou deixar o olhinho sempre visível para ver o projeto sem editar */}
+                        {(user?.role !== 'admin_master' || proj.status !== 'pending') && (
+                          <button onClick={() => openPreviewModal(proj)} className="p-2 text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg" title="Visualizar">
+                            <Eye size={16} />
+                          </button>
                         )}
 
                         {/* Ações de Edição/Exclusão (se for dono ou admin_master) */}
                         {(user?.role === 'admin_master' || proj.created_by === user?.id) && (
                           <>
-                            <button onClick={() => openEditModal(proj)} className="p-2 text-[#194775] dark:text-[#38bdf8] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                            <button onClick={() => openEditModal(proj)} className="p-2 text-slate-600 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-lg" title="Editar">
                               <Edit2 size={16} />
                             </button>
-                            <button onClick={() => handleDelete(proj.id)} className="p-2 text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors">
+                            <button onClick={() => handleDelete(proj.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg" title="Excluir">
                               <Trash2 size={16} />
                             </button>
                           </>
@@ -341,6 +372,17 @@ const ProjectManager = () => {
           onClose={() => setIsModalOpen(false)}
           onSubmit={fetchProjects}
           editingProject={editingProject}
+        />
+      )}
+
+      {isPreviewOpen && (
+        <ProjectPreviewModal
+          isOpen={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          project={previewProject}
+          userRole={user?.role}
+          onApprove={(id) => handleStatusChange(id, 'active')}
+          onReject={(id) => handleStatusChange(id, 'rejected')}
         />
       )}
     </div>

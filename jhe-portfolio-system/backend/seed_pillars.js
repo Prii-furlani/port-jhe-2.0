@@ -4,6 +4,15 @@ async function seed() {
     try {
         console.log('Iniciando inserção dos Pilares Institucionais...');
         
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS pillars (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                titulo VARCHAR(100) NOT NULL,
+                descricao TEXT NOT NULL,
+                icone VARCHAR(50) NOT NULL
+            )
+        `);
+        
         const pillars = [
             {
                 titulo: 'Sustentabilidade Urbana',

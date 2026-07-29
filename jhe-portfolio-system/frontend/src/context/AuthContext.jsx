@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 const AuthContext = createContext();
 
@@ -8,6 +9,20 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('jhe_token') || null);
   const [isAuthenticated, setIsAuthenticated] = useState(!!token);
+
+  const updateGlobalTheme = (themeMode) => {
+    let activeTheme = themeMode;
+    if (themeMode === 'system') {
+      activeTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', activeTheme);
+    if (activeTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', themeMode);
+  };
 
   useEffect(() => {
     // Se temos o token no localStorage, podemos considerar autenticado
@@ -22,7 +37,35 @@ export const AuthProvider = ({ children }) => {
         }).join(''));
         
         const decodedUser = JSON.parse(jsonPayload);
+        
+        if (decodedUser.exp) {
+          const expirationTime = decodedUser.exp * 1000;
+          const currentTime = Date.now();
+          const timeLeft = expirationTime - currentTime;
+
+          if (timeLeft <= 0) {
+            logout();
+            Swal.fire('Sessão Expirada', 'Você foi deslogado por questões de segurança.', 'warning');
+            return;
+          } else {
+            const timeoutId = setTimeout(() => {
+              logout();
+              Swal.fire('Sessão Expirada', 'Você foi deslogado por questões de segurança.', 'warning');
+            }, timeLeft);
+            
+            setUser(decodedUser);
+            // Apply theme on load if different
+            if (decodedUser.theme) {
+              updateGlobalTheme(decodedUser.theme);
+            }
+            return () => clearTimeout(timeoutId);
+          }
+        }
+
         setUser(decodedUser);
+        if (decodedUser.theme) {
+          updateGlobalTheme(decodedUser.theme);
+        }
       } catch (error) {
         console.error("Falha ao decodificar token", error);
         logout();
@@ -49,6 +92,9 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('jhe_token', data.token);
         setToken(data.token);
         setUser(data.user);
+        if (data.user.theme) {
+            updateGlobalTheme(data.user.theme);
+        }
         return { success: true, user: data.user };
       } else {
         return { success: false, error: data.error || 'Falha na autenticação.' };
@@ -67,7 +113,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated, login, logout, updateGlobalTheme }}>
       {children}
     </AuthContext.Provider>
   );

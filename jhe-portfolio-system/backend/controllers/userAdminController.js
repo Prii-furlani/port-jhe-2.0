@@ -1,17 +1,7 @@
 const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-async function registrarAuditoria(userId, acao, tabela, req) {
-    try {
-        const ip = req.ip || req.connection.remoteAddress;
-        await pool.query(
-            'INSERT INTO auditoria_logs (usuario_id, acao, tabela_afetada, ip_originario, status) VALUES (?, ?, ?, ?, ?)',
-            [userId, acao, tabela, ip, 'sucesso']
-        );
-    } catch (err) {
-        console.error('Falha ao registrar auditoria:', err);
-    }
-}
+const { logAudit } = require('../utils/auditLogger');
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -50,7 +40,14 @@ exports.createUser = async (req, res) => {
             [nome, email, hashedPw, role]
         );
 
-        await registrarAuditoria(req.user.id, `CRIAR_USUARIO (${result.insertId})`, 'usuarios', req);
+        await logAudit({
+            usuario_id: req.user.id,
+            acao: 'CRIAR_USUARIO',
+            tabela_afetada: 'usuarios',
+            registro_id: result.insertId,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Usuário '${nome}' (${email}) criado.`
+        });
 
         res.json({ success: true, message: 'Usuário criado com sucesso com senha padrão 123456.' });
     } catch (error) {
@@ -83,7 +80,14 @@ exports.updateUser = async (req, res) => {
             [nome, email, role, id]
         );
 
-        await registrarAuditoria(req.user.id, `EDITAR_USUARIO (${id})`, 'usuarios', req);
+        await logAudit({
+            usuario_id: req.user.id,
+            acao: 'EDITAR_USUARIO',
+            tabela_afetada: 'usuarios',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Usuário '${nome}' (${email}) atualizado. Nova role: ${role}.`
+        });
 
         res.json({ success: true, message: 'Usuário atualizado com sucesso.' });
     } catch (error) {
@@ -103,7 +107,14 @@ exports.resetPassword = async (req, res) => {
             [hashedPw, id]
         );
 
-        await registrarAuditoria(req.user.id, `RESET_SENHA_USUARIO (${id})`, 'usuarios', req);
+        await logAudit({
+            usuario_id: req.user.id,
+            acao: 'RESET_SENHA_USUARIO',
+            tabela_afetada: 'usuarios',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Senha do usuário ID ${id} resetada.`
+        });
 
         res.json({ success: true, message: 'Senha resetada para 123456 com sucesso.' });
     } catch (error) {
@@ -132,7 +143,14 @@ exports.toggleStatus = async (req, res) => {
 
         await pool.query('UPDATE usuarios SET ativo = ? WHERE id = ?', [newStatus, id]);
 
-        await registrarAuditoria(req.user.id, `ALTERAR_STATUS_USUARIO (${id} -> ${newStatus})`, 'usuarios', req);
+        await logAudit({
+            usuario_id: req.user.id,
+            acao: 'ALTERAR_STATUS_USUARIO',
+            tabela_afetada: 'usuarios',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Status do usuário ID ${id} alterado para ${newStatus}.`
+        });
 
         res.json({ success: true, message: `Status do usuário alterado para ${newStatus ? 'ativo' : 'inativo'}.` });
     } catch (error) {

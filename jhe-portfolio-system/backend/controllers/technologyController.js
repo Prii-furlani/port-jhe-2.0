@@ -1,4 +1,5 @@
 const pool = require('../config/db');
+const { logAudit } = require('../utils/auditLogger');
 
 // Listar todas as tecnologias
 exports.getAllTechnologies = async (req, res) => {
@@ -51,6 +52,15 @@ exports.updateTechnology = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Tecnologia atualizada com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'ATUALIZAR_TECNOLOGIA',
+            tabela_afetada: 'tecnologias',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Tecnologia '${nome}' (ID: ${id}) atualizada.`
+        });
     } catch (error) {
         console.error('Erro ao atualizar tecnologia:', error);
         res.status(500).json({ success: false, error: 'Erro interno ao atualizar tecnologia.' });
@@ -62,6 +72,11 @@ exports.deleteTechnology = async (req, res) => {
     try {
         const { id } = req.params;
 
+        const [tech] = await pool.query('SELECT nome FROM tecnologias WHERE id = ?', [id]);
+        if (tech.length === 0) return res.status(404).json({ success: false, error: 'Tecnologia não encontrada.' });
+        
+        const techNome = tech[0].nome;
+
         const [result] = await pool.query('DELETE FROM tecnologias WHERE id = ?', [id]);
 
         if (result.affectedRows === 0) {
@@ -69,6 +84,15 @@ exports.deleteTechnology = async (req, res) => {
         }
 
         res.json({ success: true, message: 'Tecnologia removida com sucesso!' });
+        
+        await logAudit({
+            usuario_id: req.user?.id,
+            acao: 'EXCLUIR_TECNOLOGIA',
+            tabela_afetada: 'tecnologias',
+            registro_id: id,
+            ip_originario: req.ip || req.connection.remoteAddress,
+            detalhes: `Tecnologia '${techNome}' (ID: ${id}) foi excluída.`
+        });
     } catch (error) {
         console.error('Erro ao remover tecnologia:', error);
         res.status(500).json({ success: false, error: 'Erro interno ao excluir tecnologia.' });

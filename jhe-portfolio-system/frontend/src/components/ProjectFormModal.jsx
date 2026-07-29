@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Upload, Plus, XCircle, Save, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Upload, Plus, XCircle, Save, Send, Clock, Trash2, ChevronDown, ChevronUp, Calendar } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuth } from '../context/AuthContext';
 
@@ -39,6 +39,49 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
   const [stakeholderInput, setStakeholderInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
+  const techDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (techDropdownRef.current && !techDropdownRef.current.contains(event.target)) {
+        setIsTechDropdownOpen(false);
+      }
+    };
+
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        setIsTechDropdownOpen(false);
+      }
+    };
+
+    if (isTechDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscKey);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [isTechDropdownOpen]);
+
+  // Updates State (Histórico)
+  const [updates, setUpdates] = useState([]);
+  const [isLoadingUpdates, setIsLoadingUpdates] = useState(false);
+  const [isUpdatesExpanded, setIsUpdatesExpanded] = useState(false);
+  const [isAddingUpdate, setIsAddingUpdate] = useState(false);
+  const [updateFormData, setUpdateFormData] = useState({
+    month_year: '',
+    title: '',
+    description: '',
+    is_public: false
+  });
+  const [updateGallery, setUpdateGallery] = useState([]);
+  const [removedUpdates, setRemovedUpdates] = useState([]);
+
   useEffect(() => {
     if (isOpen) {
       fetchClientes();
@@ -58,7 +101,8 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
           desafios: editingProject.desafios || '',
           metodologias: editingProject.metodologias || '',
           kpis_impacto: editingProject.kpis_impacto || '',
-          stakeholders: editingProject.stakeholders || []
+          stakeholders: editingProject.stakeholders || [],
+          status_solicitado: editingProject.status || 'draft'
         });
         setSelectedTechs(editingProject.tecnologias || []);
         if (editingProject.imagem_url) {
@@ -68,6 +112,8 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
         }
         setExistingGallery(editingProject.galeria || []);
         setRemovedGallery([]);
+        setUpdates(editingProject.updates || []);
+        setRemovedUpdates([]);
       } else {
         resetForm();
       }
@@ -101,7 +147,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
   const resetForm = () => {
     setFormData({
       titulo: '', cliente_id: '', servico_id: '', setor: '', ano_desenvolvimento: new Date().getFullYear(), localizacao: '',
-      link_oficial: '', resumo_curto: '', descricao_detalhada: '', desafios: '', metodologias: '', kpis_impacto: '', stakeholders: []
+      link_oficial: '', resumo_curto: '', descricao_detalhada: '', desafios: '', metodologias: '', kpis_impacto: '', stakeholders: [], status_solicitado: 'draft'
     });
     setCoverImage(null);
     setCoverPreview('');
@@ -110,6 +156,8 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
     setRemovedGallery([]);
     setSelectedTechs([]);
     setTechSearch('');
+    setUpdates([]);
+    setRemovedUpdates([]);
   };
 
   const handleImageChange = (e) => {
@@ -186,9 +234,61 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
     setFormData({ ...formData, stakeholders: newStakeholders });
   };
 
-  const handleSubmitForm = async (status_solicitado) => {
-    if (!formData.titulo || !formData.cliente_id) {
-      return Swal.fire('Erro', 'Preencha o título e o cliente obrigatórios.', 'warning');
+  // Funções de Updates (Histórico)
+  const fetchUpdates = async () => {
+    // Não precisa mais fazer fetch isolado, vem com o projeto
+  };
+
+  useEffect(() => {
+    if (isOpen && editingProject && isUpdatesExpanded) {
+      // open logic
+    }
+  }, [isOpen, editingProject, isUpdatesExpanded]);
+
+  const handleAddUpdate = async (e) => {
+    e.preventDefault();
+    if (!updateFormData.month_year || !updateFormData.title || !updateFormData.description) {
+      return Swal.fire('Erro', 'Preencha todos os campos obrigatórios da atualização', 'warning');
+    }
+
+    const newUpdate = {
+      tempId: Date.now(),
+      month_year: updateFormData.month_year,
+      title: updateFormData.title,
+      description: updateFormData.description,
+      is_public: updateFormData.is_public || false,
+      galleryFiles: updateGallery
+    };
+
+    setUpdates([newUpdate, ...updates]);
+    setIsAddingUpdate(false);
+    setUpdateFormData({ month_year: '', title: '', description: '', is_public: false });
+    setUpdateGallery([]);
+  };
+
+  const handleDeleteUpdate = async (update) => {
+    const result = await Swal.fire({
+      title: 'Tem certeza?',
+      text: "Esta atualização será removida do histórico.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      if (update.id) {
+        setRemovedUpdates([...removedUpdates, update.id]);
+      }
+      setUpdates(updates.filter(u => u !== update));
+    }
+  };
+
+  const handleSubmitForm = async () => {
+    if (!formData.titulo) {
+      return Swal.fire('Erro', 'Preencha o título do projeto.', 'warning');
     }
     
     setIsSaving(true);
@@ -202,7 +302,6 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
       }
     });
     formDataToSend.append('tecnologias', JSON.stringify(selectedTechs.map(t => t.id)));
-    formDataToSend.append('status_solicitado', status_solicitado);
     if (coverImage) {
       formDataToSend.append('cover_image', coverImage);
     }
@@ -213,6 +312,27 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
     
     if (removedGallery.length > 0) {
       formDataToSend.append('removed_gallery', JSON.stringify(removedGallery));
+    }
+
+    const updatesClean = updates.map(u => ({
+        id: u.id,
+        title: u.title,
+        month_year: u.month_year,
+        description: u.description,
+        is_public: u.is_public
+    }));
+    formDataToSend.append('updates', JSON.stringify(updatesClean));
+    
+    updates.forEach((u, i) => {
+        if (u.galleryFiles) {
+            u.galleryFiles.forEach(file => {
+                formDataToSend.append(`update_gallery_${i}`, file);
+            });
+        }
+    });
+
+    if (removedUpdates.length > 0) {
+        formDataToSend.append('removed_updates', JSON.stringify(removedUpdates));
     }
 
     const url = editingProject 
@@ -316,7 +436,7 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
 
               <div>
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tecnologias Utilizadas</label>
-                <div className="relative">
+                <div className="relative" ref={techDropdownRef}>
                   <input 
                     type="text" 
                     placeholder="Buscar ou criar tecnologia..."
@@ -380,10 +500,10 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
                     value={formData.titulo} onChange={e => setFormData({...formData, titulo: e.target.value})} />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Cliente *</label>
-                  <select className="form-input w-full p-2 border rounded-xl" required
-                    value={formData.cliente_id} onChange={e => setFormData({...formData, cliente_id: e.target.value})}>
-                    <option value="">Selecione o Cliente</option>
+                  <label className="block text-sm font-semibold mb-1">Cliente (Opcional)</label>
+                  <select className="form-input w-full p-2 border rounded-xl" 
+                    value={formData.cliente_id || ''} onChange={e => setFormData({...formData, cliente_id: e.target.value})}>
+                    <option value="">Nenhum / Uso Interno</option>
                     {clientes.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                   </select>
                 </div>
@@ -452,28 +572,256 @@ const ProjectFormModal = ({ isOpen, onClose, onSubmit, editingProject }) => {
 
             </div>
           </div>
+
+          {/* Seção Sanfona: Histórico de Atualizações (Somente ao Editar) */}
+          {editingProject && (
+            <div className="mt-8 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
+              <button 
+                type="button"
+                className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => setIsUpdatesExpanded(!isUpdatesExpanded)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg">
+                    <Clock size={18} />
+                  </div>
+                  <h3 className="font-bold text-slate-800 dark:text-slate-200">Histórico de Atualizações do Projeto</h3>
+                </div>
+                {isUpdatesExpanded ? <ChevronUp size={20} className="text-slate-500" /> : <ChevronDown size={20} className="text-slate-500" />}
+              </button>
+              
+              {isUpdatesExpanded && (
+                <div className="p-6 border-t border-slate-200 dark:border-slate-700">
+                  {/* Header Action */}
+                  {!isAddingUpdate && (
+                    <div className="mb-6 flex justify-end">
+                      <button 
+                        onClick={() => setIsAddingUpdate(true)}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-sm"
+                      >
+                        <Plus size={16} /> Adicionar Marco / Atualização
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Formulário de Nova Atualização */}
+                  {isAddingUpdate && (
+                    <div className="mb-8 bg-slate-50 dark:bg-slate-800/50 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                      <h4 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2 text-sm">
+                        <Plus size={16} className="text-indigo-500" /> Nova Atualização
+                      </h4>
+                      <form onSubmit={handleAddUpdate} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="md:col-span-1">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Data *</label>
+                            <input 
+                              type="date" 
+                              required 
+                              className="form-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                              value={updateFormData.update_date}
+                              onChange={e => setUpdateFormData({...updateFormData, update_date: e.target.value})}
+                            />
+                          </div>
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Título *</label>
+                            <input 
+                              type="text" 
+                              required 
+                              placeholder="Ex: Módulo de Relatórios Adicionado"
+                              className="form-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                              value={updateFormData.title}
+                              onChange={e => setUpdateFormData({...updateFormData, title: e.target.value})}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Data / Mês e Ano *</label>
+                            <input 
+                              type="text" 
+                              required 
+                              placeholder="Ex: Julho / 2026"
+                              className="form-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                              value={updateFormData.month_year}
+                              onChange={e => setUpdateFormData({...updateFormData, month_year: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descrição das Melhorias *</label>
+                          <textarea 
+                            required 
+                            rows={3}
+                            placeholder="Descreva o que foi alterado, melhorado ou corrigido nesta atualização..."
+                            className="form-input w-full p-2.5 border border-slate-300 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none"
+                            value={updateFormData.description}
+                            onChange={e => setUpdateFormData({...updateFormData, description: e.target.value})}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fotos da Atualização</label>
+                          <div 
+                            className="w-full rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 p-4 text-center cursor-pointer hover:border-indigo-500 transition-colors"
+                            onClick={() => document.getElementById('updateGallery').click()}
+                          >
+                            <Upload className="text-slate-400 mx-auto mb-1" size={24} />
+                            <span className="text-xs text-slate-500">Clique para adicionar novas fotos nesta etapa</span>
+                            <input 
+                              type="file" 
+                              id="updateGallery" 
+                              className="hidden" 
+                              accept="image/*" 
+                              multiple 
+                              onChange={(e) => setUpdateGallery([...updateGallery, ...Array.from(e.target.files)])} 
+                            />
+                          </div>
+                          {updateGallery.length > 0 && (
+                            <div className="grid grid-cols-4 gap-2 mt-3">
+                              {updateGallery.map((file, idx) => (
+                                <div key={idx} className="relative group rounded-lg overflow-hidden border border-indigo-300 dark:border-indigo-700">
+                                  <img src={URL.createObjectURL(file)} className="w-full h-12 object-cover" alt="Update Galeria" />
+                                  <button onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newGallery = [...updateGallery];
+                                    newGallery.splice(idx, 1);
+                                    setUpdateGallery(newGallery);
+                                  }} className="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Visibilidade:</label>
+                          <div className="flex items-center cursor-pointer" onClick={() => setUpdateFormData({...updateFormData, is_public: !updateFormData.is_public})}>
+                            <div className={`w-12 h-6 flex items-center rounded-full p-1 transition-colors ${updateFormData.is_public ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                              <div className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${updateFormData.is_public ? 'translate-x-6' : ''}`}></div>
+                            </div>
+                            <span className="ml-2 text-sm text-slate-600 dark:text-slate-400">{updateFormData.is_public ? '🟢 Público na Vitrine' : '🔒 Rascunho / Interno'}</span>
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-2">
+                          <button 
+                            type="button" 
+                            onClick={() => setIsAddingUpdate(false)}
+                            className="px-4 py-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                          <button 
+                            type="submit"
+                            className="px-4 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors shadow-sm"
+                          >
+                            Salvar Atualização
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+
+                  {/* Lista de Atualizações */}
+                  <div className="space-y-4">
+                    {isLoadingUpdates ? (
+                      <div className="text-center py-4 text-slate-500 text-sm">Carregando histórico...</div>
+                    ) : updates.length === 0 ? (
+                      <div className="text-center py-6 px-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                        <Clock className="mx-auto text-slate-300 dark:text-slate-600 mb-2" size={24} />
+                        <p className="text-sm text-slate-500 font-medium">Nenhuma atualização registrada ainda.</p>
+                      </div>
+                    ) : (
+                      updates.map((update) => {
+                        return (
+                          <div key={update.id || update.tempId} className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded flex items-center gap-1">
+                                  <Calendar size={12} /> {update.month_year}
+                                </span>
+                                <span className={`text-xs px-2 py-0.5 rounded font-bold ${update.is_public ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'}`}>
+                                  {update.is_public ? '🟢 Público' : '🔒 Rascunho'}
+                                </span>
+                                <h5 className="text-sm font-bold text-slate-800 dark:text-slate-200 ml-2">{update.title}</h5>
+                              </div>
+                              <p className="text-sm text-slate-600 dark:text-slate-400 whitespace-pre-line mt-2">{update.description}</p>
+                              {(update.photos && update.photos.length > 0) && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {update.photos.map(img => (
+                                    <div key={img.id} className="w-12 h-12 rounded-md overflow-hidden border border-slate-200 dark:border-slate-600">
+                                      <img src={`http://localhost:5000${img.imagem_url}`} className="w-full h-full object-cover" alt="Update Galeria" />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              {(update.galleryFiles && update.galleryFiles.length > 0) && (
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {update.galleryFiles.map((file, i) => (
+                                    <div key={i} className="w-12 h-12 rounded-md overflow-hidden border border-indigo-200 dark:border-indigo-600 relative">
+                                      <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="Novas Fotos" />
+                                      <span className="absolute inset-0 bg-indigo-600/20"></span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <button 
+                                  onClick={(e) => {
+                                      e.preventDefault();
+                                      const u = {...update, is_public: !update.is_public};
+                                      setUpdates(updates.map(item => item === update ? u : item));
+                                  }}
+                                  className="text-slate-400 hover:text-indigo-500 transition-colors p-1"
+                                  title="Alternar Visibilidade"
+                                >
+                                  {update.is_public ? 'Tornar Rascunho' : 'Tornar Público'}
+                                </button>
+                                <button                                  onClick={(e) => { e.preventDefault(); handleDeleteUpdate(update); }}
+                              className="text-slate-400 hover:text-red-500 transition-colors p-1"
+                              title="Excluir Atualização"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
-        <div className="sticky bottom-0 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-            Cancelar
-          </button>
+        <div className="sticky bottom-0 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap justify-between items-center gap-3 rounded-b-2xl">
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <label className="text-sm font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Status:</label>
+            <select 
+              className="form-input p-2 border rounded-xl bg-white dark:bg-slate-800 text-sm"
+              value={formData.status_solicitado} 
+              onChange={e => setFormData({...formData, status_solicitado: e.target.value})}
+            >
+              <option value="draft">Rascunho Privado</option>
+              <option value="concluido">Público - Concluído</option>
+              <option value="em_desenvolvimento">Público - Em Desenvolvimento</option>
+              <option value="em_expansao">Público - Em Expansão</option>
+            </select>
+          </div>
           
-          <button 
-            onClick={() => handleSubmitForm('draft')}
-            disabled={isSaving}
-            className="px-5 py-2.5 rounded-xl font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2"
-          >
-            <Save size={16} /> Salvar como Rascunho
-          </button>
-
-          <button 
-            onClick={() => handleSubmitForm('active')}
-            disabled={isSaving}
-            className="px-5 py-2.5 rounded-xl font-bold bg-accent-primary text-slate-900 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
-          >
-            {isSaving ? 'Enviando...' : <><Send size={16} /> Submeter Projeto</>}
-          </button>
+          <div className="flex gap-3 w-full md:w-auto justify-end">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              Cancelar
+            </button>
+            <button 
+              onClick={handleSubmitForm}
+              disabled={isSaving}
+              className="px-5 py-2.5 rounded-xl font-bold bg-accent-primary text-slate-900 hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+            >
+              {isSaving ? 'Enviando...' : <><Save size={16} /> Salvar Software</>}
+            </button>
+          </div>
         </div>
 
       </div>

@@ -257,7 +257,7 @@ const UserManager = () => {
                   {renderHeader('Perfil', 'role')}
                   {renderHeader('Projetos Criados', 'projetos_criados')}
                   {renderHeader('Status', 'ativo')}
-                  <th className="py-4 px-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right">Ações</th>
+                  <th className="py-4 px-4 text-xs font-black uppercase tracking-wider text-slate-500 text-right min-w-[120px]">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
@@ -295,12 +295,12 @@ const UserManager = () => {
                         </span>
                       </td>
                       <td className="py-4 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => handleResetPassword(u)}
                             disabled={isCurrentUser(u.id)}
                             title={isCurrentUser(u.id) ? "Para alterar sua senha, use a opção 'Alterar Senha' no menu lateral." : "Resetar Senha"}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-2 rounded-lg transition-all opacity-60 group-hover:opacity-100 hover:opacity-100 hover:shadow-sm ${
                               isCurrentUser(u.id) 
                               ? 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 cursor-not-allowed'
                               : 'bg-orange-100 text-orange-600 hover:bg-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:hover:bg-orange-500/40'
@@ -312,7 +312,7 @@ const UserManager = () => {
                           <button 
                             onClick={() => openEditModal(u)}
                             title="Editar Usuário"
-                            className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/40 transition-colors"
+                            className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 dark:bg-blue-500/20 dark:text-blue-400 dark:hover:bg-blue-500/40 transition-all opacity-60 group-hover:opacity-100 hover:opacity-100 hover:shadow-sm"
                           >
                             <Edit2 size={16} />
                           </button>
@@ -321,7 +321,7 @@ const UserManager = () => {
                             onClick={() => handleToggleStatus(u)}
                             disabled={isCurrentUser(u.id)}
                             title={isCurrentUser(u.id) ? "Você não pode inativar seu próprio usuário." : u.ativo ? "Inativar Usuário" : "Ativar Usuário"}
-                            className={`p-2 rounded-lg transition-colors ${
+                            className={`p-2 rounded-lg transition-all opacity-60 group-hover:opacity-100 hover:opacity-100 hover:shadow-sm ${
                               isCurrentUser(u.id)
                               ? 'bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-slate-500 cursor-not-allowed'
                               : u.ativo 

@@ -12,7 +12,7 @@ const ProjectCard = ({ project }) => {
       onClick={() => navigate(`/projetos/${project.id}`)}
       className="group relative h-[420px] w-full perspective-1000 cursor-pointer"
     >
-      <div className="relative w-full h-full transition-transform duration-700 preserve-3d group-hover:my-rotate-y-180 rounded-3xl shadow-sm hover:shadow-2xl bg-secondary-light dark:bg-secondary-dark">
+      <div className="relative w-full h-full transition-transform duration-700 preserve-3d group-hover:my-rotate-y-180 rounded-3xl shadow-[0_2px_18px_0_rgba(0,0,0,0.1),0_2px_26px_0_rgba(0,0,0,0.1)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.15)] bg-secondary-light dark:bg-secondary-dark">
       
       {/* Camada FRONT (Frente) */}
       <div className="absolute inset-0 w-full h-full p-6 flex flex-col justify-between transition-opacity duration-500 group-hover:opacity-0 z-10 bg-secondary-light dark:bg-secondary-dark rounded-3xl overflow-hidden backface-hidden">
